@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35806.99 d17.13
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nezu", "Nezu\Nezu.csproj", "{630A2A9B-5023-4AA0-9950-8457F7A8CD21}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nezu.Core", "Nezu.Core\Nezu.Core.csproj", "{A211FBA5-BE8D-47F6-892D-9C11D64AD6D8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{630A2A9B-5023-4AA0-9950-8457F7A8CD21}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{630A2A9B-5023-4AA0-9950-8457F7A8CD21}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{630A2A9B-5023-4AA0-9950-8457F7A8CD21}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{630A2A9B-5023-4AA0-9950-8457F7A8CD21}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A211FBA5-BE8D-47F6-892D-9C11D64AD6D8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A211FBA5-BE8D-47F6-892D-9C11D64AD6D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A211FBA5-BE8D-47F6-892D-9C11D64AD6D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A211FBA5-BE8D-47F6-892D-9C11D64AD6D8}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8A5392F1-FC8D-47C5-A967-E48187222D61}
+	EndGlobalSection
+EndGlobal
