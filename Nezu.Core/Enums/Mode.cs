@@ -3,7 +3,7 @@
     /// <summary>
     /// The current operating mode of the processor.
     /// </summary>
-    public enum ARMMode : uint
+    public enum Mode : uint
     {
         /// <summary>User mode: PC, R14 to R0, CPSR</summary>
         User = 0b10000,

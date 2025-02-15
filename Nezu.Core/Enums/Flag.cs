@@ -4,7 +4,7 @@
     /// The flags used in the status registers.
     /// </summary>
     [Flags]
-    public enum ARMFlag : uint
+    public enum Flag : uint
     {
         /// <summary>Disables Fast Interrupt Requests (FIQ)</summary>
         FIQDisable = 1 << 6,

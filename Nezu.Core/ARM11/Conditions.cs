@@ -7,35 +7,35 @@ namespace Nezu.Core.ARM11
     {
         private bool IsConditionSet(ConditionCode condition) => condition switch
         {
-            ConditionCode.EQ => Registers.IsFlagSet(ARMFlag.Z),
-            ConditionCode.NE => !Registers.IsFlagSet(ARMFlag.Z),
-            ConditionCode.CS => Registers.IsFlagSet(ARMFlag.C),
-            ConditionCode.CC => !Registers.IsFlagSet(ARMFlag.C),
-            ConditionCode.MI => Registers.IsFlagSet(ARMFlag.N),
-            ConditionCode.PL => !Registers.IsFlagSet(ARMFlag.N),
-            ConditionCode.VS => Registers.IsFlagSet(ARMFlag.V),
-            ConditionCode.VC => !Registers.IsFlagSet(ARMFlag.V),
+            ConditionCode.EQ => Registers.IsFlagSet(Flag.Z),
+            ConditionCode.NE => !Registers.IsFlagSet(Flag.Z),
+            ConditionCode.CS => Registers.IsFlagSet(Flag.C),
+            ConditionCode.CC => !Registers.IsFlagSet(Flag.C),
+            ConditionCode.MI => Registers.IsFlagSet(Flag.N),
+            ConditionCode.PL => !Registers.IsFlagSet(Flag.N),
+            ConditionCode.VS => Registers.IsFlagSet(Flag.V),
+            ConditionCode.VC => !Registers.IsFlagSet(Flag.V),
             ConditionCode.HI => IsConditionHI(),
             ConditionCode.LS => IsConditionLS(),
             ConditionCode.GE => IsConditionGE(),
             ConditionCode.LT => IsConditionLT(),
-            ConditionCode.GT => !Registers.IsFlagSet(ARMFlag.Z) && IsConditionGE(),
-            ConditionCode.LE => Registers.IsFlagSet(ARMFlag.Z) || IsConditionLT(),
+            ConditionCode.GT => !Registers.IsFlagSet(Flag.Z) && IsConditionGE(),
+            ConditionCode.LE => Registers.IsFlagSet(Flag.Z) || IsConditionLT(),
             ConditionCode.AL => true,
             ConditionCode.UD => false,
             _ => false
         };
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool IsConditionHI() => Registers.IsFlagSet(ARMFlag.C) && !Registers.IsFlagSet(ARMFlag.Z);
+        private bool IsConditionHI() => Registers.IsFlagSet(Flag.C) && !Registers.IsFlagSet(Flag.Z);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool IsConditionLS() => !Registers.IsFlagSet(ARMFlag.C) || Registers.IsFlagSet(ARMFlag.Z);
+        private bool IsConditionLS() => !Registers.IsFlagSet(Flag.C) || Registers.IsFlagSet(Flag.Z);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool IsConditionGE() => Registers.IsFlagSet(ARMFlag.N) == Registers.IsFlagSet(ARMFlag.V);
+        private bool IsConditionGE() => Registers.IsFlagSet(Flag.N) == Registers.IsFlagSet(Flag.V);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool IsConditionLT() => Registers.IsFlagSet(ARMFlag.N) != Registers.IsFlagSet(ARMFlag.V);
+        private bool IsConditionLT() => Registers.IsFlagSet(Flag.N) != Registers.IsFlagSet(Flag.V);
     }
 }

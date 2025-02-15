@@ -12,7 +12,7 @@ namespace Nezu.Core.ARM11
 
         public ARM11Core()
         {
-
+            bool t = IsConditionSet(Enums.ConditionCode.EQ);
         }
     }
 }

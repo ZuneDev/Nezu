@@ -8,28 +8,31 @@ namespace Nezu.Core.ARM11
     /// </summary>
     public unsafe struct RegisterSet
     {
-        private uint _bankedSpsrFIQ;
-        private uint _bankedSpsrSupervisor;
-        private uint _bankedSpsrAbort;
-        private uint _bankedSpsrIRQ;
-        private uint _bankedSpsrUndefined;
+        private readonly Dictionary<Mode, uint[]> _bankedRegisters = new();
+        private readonly Dictionary<Mode, uint> _bankedSpsr = new();
 
         private uint[] _registers = new uint[16];
 
-        private uint[] _bankedFIQ = new uint[7];
-        private uint[] _bankedUser = new uint[7];
-        private uint[] _bankedSupervisor = new uint[2];
-        private uint[] _bankedAbort = new uint[2];
-        private uint[] _bankedIRQ = new uint[2];
-        private uint[] _bankedUndefined = new uint[2];
-
-        private ARMMode _currentMode;
+        private Mode _currentMode;
 
         public RegisterSet()
         {
+            _bankedRegisters[Mode.FIQ] = new uint[7];
+            _bankedRegisters[Mode.User] = new uint[7];  // System mode shares this
+            _bankedRegisters[Mode.Supervisor] = new uint[2];
+            _bankedRegisters[Mode.Abort] = new uint[2];
+            _bankedRegisters[Mode.IRQ] = new uint[2];
+            _bankedRegisters[Mode.Undefined] = new uint[2];
+
+            _bankedSpsr[Mode.FIQ] = 0;
+            _bankedSpsr[Mode.Supervisor] = 0;
+            _bankedSpsr[Mode.Abort] = 0;
+            _bankedSpsr[Mode.IRQ] = 0;
+            _bankedSpsr[Mode.Undefined] = 0;
+
             CPSR = 0;
-            _currentMode = ARMMode.User;
-            UpdateMode(ARMMode.User);
+            _currentMode = Mode.User;
+            UpdateMode(Mode.User);
         }
 
         public uint this[int index]
@@ -39,64 +42,38 @@ namespace Nezu.Core.ARM11
         }
 
         /// <summary>
-        /// Switches the register bank that the processor is using based on the requested <see cref="ARMMode"/>.
+        /// Switches the register bank that the processor is using based on the requested <see cref="Mode"/>.
         /// </summary>
         /// <param name="newMode">The mode to set the processor to.</param>
-        public void UpdateMode(ARMMode newMode)
+        public void UpdateMode(Mode newMode)
         {
-            switch (_currentMode)
+            bool isUserOrSystem = _currentMode == Mode.User || _currentMode == Mode.System;
+            Mode effectiveMode = (_currentMode == Mode.System) ? Mode.User : _currentMode;
+            if (_bankedRegisters.ContainsKey(effectiveMode))
             {
-                case ARMMode.System:
-                case ARMMode.User:
-                    Array.Copy(_registers, 8, _bankedUser, 0, 7);
-                    break;
-                case ARMMode.FIQ:
-                    Array.Copy(_registers, 8, _bankedFIQ, 0, 7);
-                    _bankedSpsrFIQ = SPSR;
-                    break;
-                case ARMMode.Supervisor:
-                    Array.Copy(_registers, 13, _bankedSupervisor, 0, 2);
-                    _bankedSpsrSupervisor = SPSR;
-                    break;
-                case ARMMode.Abort:
-                    Array.Copy(_registers, 13, _bankedAbort, 0, 2);
-                    _bankedSpsrAbort = SPSR;
-                    break;
-                case ARMMode.IRQ:
-                    Array.Copy(_registers, 13, _bankedIRQ, 0, 2);
-                    _bankedSpsrIRQ = SPSR;
-                    break;
-                case ARMMode.Undefined:
-                    Array.Copy(_registers, 13, _bankedUndefined, 0, 2);
-                    _bankedSpsrUndefined = SPSR;
-                    break;
+                int offset = (effectiveMode == Mode.FIQ) ? 8 : 13;
+                int length = (effectiveMode == Mode.FIQ) ? 7 : 2;
+                Buffer.BlockCopy(_registers, offset * sizeof(uint), _bankedRegisters[effectiveMode], 0, length * sizeof(uint));
+
+                if (!isUserOrSystem)
+                    _bankedSpsr[effectiveMode] = SPSR;
             }
 
-            if (newMode == ARMMode.FIQ) { Array.Copy(_bankedFIQ, 0, _registers, 8, 7); SPSR = _bankedSpsrFIQ; }
-            else Array.Copy(_bankedUser, 0, _registers, 8, 7);
-
-            switch (newMode)
+            bool isNewUserOrSystem = newMode == Mode.User || newMode == Mode.System;
+            Mode newEffectiveMode = (newMode == Mode.System) ? Mode.User : newMode;
+            if (_bankedRegisters.ContainsKey(newEffectiveMode))
             {
-                case ARMMode.Supervisor:
-                    Array.Copy(_bankedSupervisor, 0, _registers, 13, 2);
-                    SPSR = _bankedSpsrSupervisor;
-                    break;
-                case ARMMode.Abort:
-                    Array.Copy(_bankedAbort, 0, _registers, 13, 2);
-                    SPSR = _bankedSpsrAbort;
-                    break;
-                case ARMMode.IRQ:
-                    Array.Copy(_bankedIRQ, 0, _registers, 13, 2);
-                    SPSR = _bankedSpsrIRQ;
-                    break;
-                case ARMMode.Undefined:
-                    Array.Copy(_bankedUndefined, 0, _registers, 13, 2);
-                    SPSR = _bankedSpsrUndefined;
-                    break;
+                int offset = (newEffectiveMode == Mode.FIQ) ? 8 : 13;
+                int length = (newEffectiveMode == Mode.FIQ) ? 7 : 2;
+                Buffer.BlockCopy(_bankedRegisters[newEffectiveMode], 0, _registers, offset * sizeof(uint), length * sizeof(uint));
+
+                if (!isNewUserOrSystem)
+                    SPSR = _bankedSpsr[newEffectiveMode];
             }
 
             _currentMode = newMode;
         }
+
 
         /// <summary>The saved program status register.</summary>
         public uint SPSR;
@@ -109,14 +86,14 @@ namespace Nezu.Core.ARM11
         /// </summary>
         /// <param name="flag">The flag to set.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void SetFlag(ARMFlag flag) => CPSR |= (uint)flag;
+        public void SetFlag(Flag flag) => CPSR |= (uint)flag;
 
         /// <summary>
         /// Clears the<paramref name="flag"/> in the <see cref="CPSR"/>.
         /// </summary>
         /// <param name="flag">The flag to clear.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void ClearFlag(ARMFlag flag) => CPSR &= ~(uint)flag;
+        public void ClearFlag(Flag flag) => CPSR &= ~(uint)flag;
 
         /// <summary>
         /// Conditionally sets the specified <paramref name="flag"/> in the <see cref="CPSR"/> based on <paramref name="condition"/>.
@@ -124,7 +101,7 @@ namespace Nezu.Core.ARM11
         /// <param name="flag">The flag to modify.</param>
         /// <param name="condition">True to set the flag; false if otherwise.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void ModifyFlag(ARMFlag flag, bool condition) { if (condition) CPSR |= (uint)flag; else CPSR &= ~(uint)flag; }
+        public void ModifyFlag(Flag flag, bool condition) { if (condition) CPSR |= (uint)flag; else CPSR &= ~(uint)flag; }
 
         /// <summary>
         /// Determines whether a specified flag is set in the <see cref="CPSR"/>
@@ -132,6 +109,6 @@ namespace Nezu.Core.ARM11
         /// <param name="flag">The flag to check.</param>
         /// <returns>True if the flag is set; false if otherwise.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool IsFlagSet(ARMFlag flag) => (CPSR & (uint)flag) != 0;
+        public readonly bool IsFlagSet(Flag flag) => (CPSR & (uint)flag) != 0;
     }
 }

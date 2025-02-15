@@ -13,7 +13,7 @@ namespace Nezu
             Console.WriteLine($"R13: {reg[13]}");
 
             // Update to IRQ mode
-            reg.UpdateMode(Core.Enums.ARMMode.IRQ);
+            reg.UpdateMode(Core.Enums.Mode.IRQ);
             Console.WriteLine("\nAfter switching to IRQ mode:");
             Console.WriteLine($"SPSR: {reg.SPSR}");
             Console.WriteLine($"R13: {reg[13]}");
@@ -29,7 +29,7 @@ namespace Nezu
             Console.WriteLine($"SPSR: {reg.SPSR}");
 
             // Switch to FIQ mode
-            reg.UpdateMode(Core.Enums.ARMMode.FIQ);
+            reg.UpdateMode(Core.Enums.Mode.FIQ);
             Console.WriteLine("\nAfter switching to FIQ mode:");
             Console.WriteLine($"SPSR: {reg.SPSR}");
             Console.WriteLine($"R13: {reg[13]}");
@@ -40,13 +40,13 @@ namespace Nezu
             Console.WriteLine($"R13: {reg[13]}");
 
             // Go back to IRQ mode
-            reg.UpdateMode(Core.Enums.ARMMode.IRQ);
+            reg.UpdateMode(Core.Enums.Mode.IRQ);
             Console.WriteLine("\nAfter switching back to IRQ mode:");
             Console.WriteLine($"SPSR: {reg.SPSR}");
             Console.WriteLine($"R13: {reg[13]}");
 
             // Final check in User mode
-            reg.UpdateMode(Core.Enums.ARMMode.User);
+            reg.UpdateMode(Core.Enums.Mode.User);
             Console.WriteLine("\nAfter switching back to User mode:");
             //Console.WriteLine($"SPSR: {reg.SPSR}");
             Console.WriteLine($"R13: {reg[13]}");
