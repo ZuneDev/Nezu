@@ -1,4 +1,5 @@
 ﻿using Nezu.Core.ARM11;
+using Nezu.Core.Enums;
 
 namespace Nezu
 {
@@ -6,50 +7,24 @@ namespace Nezu
     {
         static void Main(string[] args)
         {
-            RegisterSet reg = new();
+            RegisterSet registers = new RegisterSet();
+            Mode[] modes = { Mode.User, Mode.FIQ, Mode.Supervisor, Mode.Abort, Mode.IRQ, Mode.Undefined, Mode.System };
 
-            // Start by printing the initial state
-            Console.WriteLine("Initial state in User mode:");
-            Console.WriteLine($"R13: {reg[13]}");
+            foreach (var mode in modes)
+            {
+                registers.UpdateMode(mode);
 
-            // Update to IRQ mode
-            reg.UpdateMode(Core.Enums.Mode.IRQ);
-            Console.WriteLine("\nAfter switching to IRQ mode:");
-            Console.WriteLine($"SPSR: {reg.SPSR}");
-            Console.WriteLine($"R13: {reg[13]}");
+                for (int i = 0; i < 16; i++)
+                    registers[i] = (uint)(i + ((int)mode << 16));
 
-            // Modify R13 in IRQ mode
-            reg[13] = 15;
-            Console.WriteLine($"\nAfter setting R13 in IRQ mode:");
-            Console.WriteLine($"R13: {reg[13]}");
+                registers.SPSR = (uint)((int)mode << 24);
+            }
 
-            //Set SPSR in IRQ mode
-            reg.SPSR = 200;
-            Console.WriteLine($"\nAfter setting SPSR in IRQ mode:");
-            Console.WriteLine($"SPSR: {reg.SPSR}");
-
-            // Switch to FIQ mode
-            reg.UpdateMode(Core.Enums.Mode.FIQ);
-            Console.WriteLine("\nAfter switching to FIQ mode:");
-            Console.WriteLine($"SPSR: {reg.SPSR}");
-            Console.WriteLine($"R13: {reg[13]}");
-
-            // Modify R13 in FIQ mode
-            reg[13] = 30;
-            Console.WriteLine($"\nAfter setting R13 in FIQ mode:");
-            Console.WriteLine($"R13: {reg[13]}");
-
-            // Go back to IRQ mode
-            reg.UpdateMode(Core.Enums.Mode.IRQ);
-            Console.WriteLine("\nAfter switching back to IRQ mode:");
-            Console.WriteLine($"SPSR: {reg.SPSR}");
-            Console.WriteLine($"R13: {reg[13]}");
-
-            // Final check in User mode
-            reg.UpdateMode(Core.Enums.Mode.User);
-            Console.WriteLine("\nAfter switching back to User mode:");
-            //Console.WriteLine($"SPSR: {reg.SPSR}");
-            Console.WriteLine($"R13: {reg[13]}");
+            foreach (var mode in modes)
+            {
+                registers.UpdateMode(mode);
+                registers.PrintRegisters();
+            }
         }
     }
 }

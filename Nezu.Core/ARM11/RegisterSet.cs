@@ -6,31 +6,24 @@ namespace Nezu.Core.ARM11
     /// <summary>
     /// Defines the ARM11 register set, with support for mode banking.
     /// </summary>
-    public unsafe struct RegisterSet
+    public struct RegisterSet
     {
-        private readonly Dictionary<Mode, uint[]> _bankedRegisters = new();
-        private readonly Dictionary<Mode, uint> _bankedSpsr = new();
-
+        private readonly BankParameters[] bankParams = new BankParameters[32];
+        private uint[] _bankStore = new uint[22];  // USR/SYS (7 regs, default set), FIQ (7 regs), other 4 modes (2 regs ea.)
+        private uint[] _bankedSpsr = new uint[32]; // In reality, we have 5 SPSRs, but we are once again indexing based on the mode.
         private uint[] _registers = new uint[16];
-
         private Mode _currentMode;
 
         public RegisterSet()
         {
-            _bankedRegisters[Mode.FIQ] = new uint[7];
-            _bankedRegisters[Mode.User] = new uint[7];  // System mode shares this
-            _bankedRegisters[Mode.Supervisor] = new uint[2];
-            _bankedRegisters[Mode.Abort] = new uint[2];
-            _bankedRegisters[Mode.IRQ] = new uint[2];
-            _bankedRegisters[Mode.Undefined] = new uint[2];
+            bankParams[(uint)Mode.User] =       new BankParameters(8, 0, 7);
+            bankParams[(uint)Mode.System] =     new BankParameters(8, 0, 7);
+            bankParams[(uint)Mode.FIQ] =        new BankParameters(8, 7, 7);
+            bankParams[(uint)Mode.IRQ] =        new BankParameters(13, 14, 2);
+            bankParams[(uint)Mode.Supervisor] = new BankParameters(13, 16, 2);
+            bankParams[(uint)Mode.Abort] =      new BankParameters(13, 18, 2);
+            bankParams[(uint)Mode.Undefined] =  new BankParameters(13, 20, 2);
 
-            _bankedSpsr[Mode.FIQ] = 0;
-            _bankedSpsr[Mode.Supervisor] = 0;
-            _bankedSpsr[Mode.Abort] = 0;
-            _bankedSpsr[Mode.IRQ] = 0;
-            _bankedSpsr[Mode.Undefined] = 0;
-
-            CPSR = 0;
             _currentMode = Mode.User;
             UpdateMode(Mode.User);
         }
@@ -41,37 +34,49 @@ namespace Nezu.Core.ARM11
             set => _registers[index] = value;
         }
 
+
         /// <summary>
         /// Switches the register bank that the processor is using based on the requested <see cref="Mode"/>.
         /// </summary>
         /// <param name="newMode">The mode to set the processor to.</param>
         public void UpdateMode(Mode newMode)
         {
-            bool isUserOrSystem = _currentMode == Mode.User || _currentMode == Mode.System;
-            Mode effectiveMode = (_currentMode == Mode.System) ? Mode.User : _currentMode;
-            if (_bankedRegisters.ContainsKey(effectiveMode))
-            {
-                int offset = (effectiveMode == Mode.FIQ) ? 8 : 13;
-                int length = (effectiveMode == Mode.FIQ) ? 7 : 2;
-                Buffer.BlockCopy(_registers, offset * sizeof(uint), _bankedRegisters[effectiveMode], 0, length * sizeof(uint));
+            // Don't copy anything unless we have to
+            if (_currentMode == newMode) return;
 
-                if (!isUserOrSystem)
-                    _bankedSpsr[effectiveMode] = SPSR;
-            }
+            // Copy state into respective bank
+            BankParameters currentCopy = bankParams[(uint)_currentMode];
+            for (int i = 0; i < currentCopy.RegisterCount; i++)
+                _bankStore[currentCopy.BankIndex + i] = _registers[currentCopy.ActiveSetIndex + i];
 
-            bool isNewUserOrSystem = newMode == Mode.User || newMode == Mode.System;
-            Mode newEffectiveMode = (newMode == Mode.System) ? Mode.User : newMode;
-            if (_bankedRegisters.ContainsKey(newEffectiveMode))
-            {
-                int offset = (newEffectiveMode == Mode.FIQ) ? 8 : 13;
-                int length = (newEffectiveMode == Mode.FIQ) ? 7 : 2;
-                Buffer.BlockCopy(_bankedRegisters[newEffectiveMode], 0, _registers, offset * sizeof(uint), length * sizeof(uint));
+            _bankedSpsr[(uint)_currentMode] = SPSR;
 
-                if (!isNewUserOrSystem)
-                    SPSR = _bankedSpsr[newEffectiveMode];
-            }
+
+            // Copy in r8-r12 from the user bank if we're leaving FIQ and entering anything except for USR/SYS.
+            // We do not need to copy r13 or r14 because every other mode overwrites them anyways.
+            if (_currentMode is Mode.FIQ && (_currentMode is not Mode.User || _currentMode is not Mode.System))
+                for (int i = 0; i < 5; i++) _registers[8 + i] = _bankStore[i];
+
+            // Copy new bank into working set
+            BankParameters newCopy = bankParams[(uint)newMode];
+            for (int i = 0; i < newCopy.RegisterCount; i++) 
+                _registers[newCopy.ActiveSetIndex + i] = _bankStore[newCopy.BankIndex + i];
+
+            SPSR = _bankedSpsr[(uint)newMode];
 
             _currentMode = newMode;
+        }
+
+        public void PrintRegisters()
+        {
+            Console.WriteLine($"Mode: {_currentMode}");
+            for (int i = 0; i < _registers.Length; i++)
+            {
+                Console.WriteLine($"R{i}: 0x{_registers[i]:X8}");
+            }
+            Console.WriteLine($"CPSR: 0x{CPSR:X8}");
+            Console.WriteLine($"SPSR: 0x{SPSR:X8}");
+            Console.WriteLine(new string('-', 30));
         }
 
 
@@ -81,6 +86,7 @@ namespace Nezu.Core.ARM11
         /// <summary>The current program status register.</summary>
         public uint CPSR;
 
+        #region Program status utilities
         /// <summary>
         /// Sets the specified <paramref name="flag"/> in the <see cref="CPSR"/>.
         /// </summary>
@@ -110,5 +116,42 @@ namespace Nezu.Core.ARM11
         /// <returns>True if the flag is set; false if otherwise.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly bool IsFlagSet(Flag flag) => (CPSR & (uint)flag) != 0;
+        #endregion
+    }
+
+
+    /// <summary>
+    /// Represents the parameters for a specific register bank used in different processor modes.
+    /// This struct contains the information needed to switch between modes.
+    /// </summary>
+    readonly struct BankParameters
+    {
+        /// <summary>
+        /// The index in the active register set where the registers for this mode start.
+        /// </summary>
+        internal readonly int ActiveSetIndex;
+
+        /// <summary>
+        /// The index in the bank storage where the registers for this mode are stored.
+        /// </summary>
+        internal readonly int BankIndex;
+
+        /// <summary>
+        /// The number of registers banked in this mode.
+        /// </summary>
+        internal readonly int RegisterCount;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BankParameters"/> struct with the specified values.
+        /// </summary>
+        /// <param name="activeSetIndex">The index in the active register set where the registers for this mode start.</param>
+        /// <param name="bankIndex">The index in the banked storage array where the registers for this mode are stored.</param>
+        /// <param name="registerCount">The number of registers used for this mode.</param>
+        internal BankParameters(int activeSetIndex, int bankIndex, int registerCount)
+        {
+            ActiveSetIndex = activeSetIndex;
+            BankIndex = bankIndex;
+            RegisterCount = registerCount;
+        }
     }
 }
