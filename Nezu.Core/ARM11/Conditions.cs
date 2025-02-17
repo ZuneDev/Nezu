@@ -22,7 +22,7 @@ namespace Nezu.Core.ARM11
             ConditionCode.GT => !Registers.IsFlagSet(Flag.Z) && IsConditionGE(),
             ConditionCode.LE => Registers.IsFlagSet(Flag.Z) || IsConditionLT(),
             ConditionCode.AL => true,
-            ConditionCode.UD => false,
+            ConditionCode.UD => true,
             _ => false
         };
 
@@ -37,5 +37,8 @@ namespace Nezu.Core.ARM11
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool IsConditionLT() => Registers.IsFlagSet(Flag.N) != Registers.IsFlagSet(Flag.V);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool IsBitSet(uint value, byte bit) => (value & (1 << bit)) != 0;
     }
 }
