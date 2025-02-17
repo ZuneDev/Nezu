@@ -20,7 +20,7 @@ namespace Nezu.Core.ARM11
 
         private uint Fetch()
         {
-            uint instruction = Memory.ReadWord(Registers[15]);
+            uint instruction = Memory.ReadWord(Registers.PC);
             Registers.PC += sizeof(uint);
             return instruction;
         }
