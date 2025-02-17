@@ -93,5 +93,65 @@ namespace Nezu.Core.ARM11
                     throw new NotImplementedException($"Unrecognized instruction: 0x{instruction:X8}");
             }
         }
+
+        private void ExecuteCoprocessorInstruction(uint instruction)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void ExecuteSoftwareInterrupt(uint instruction)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void ExecuteCoprocessorTransferInstruction(uint instruction)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void ExecuteBranchInstruction(uint instruction)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void ExecuteLoadStoreMultipleInstruction(uint instruction)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void ExecuteMediaInstruction(uint instruction)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void ExecuteLoadStoreOffsetInstruction(uint instruction, bool registerIndirect)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void ExecuteDataProcessingImmediateInstruction(uint instruction)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void ExecuteMoveImmediateToStatusRegisterInstruction(uint instruction)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void ExecuteDataProcessingInstruction(uint instruction)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void ExecuteMiscInstruction(uint instruction)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void ExecuteUnconditionalInstruction(uint instruction)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
