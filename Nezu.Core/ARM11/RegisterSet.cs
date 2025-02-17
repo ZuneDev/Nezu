@@ -8,7 +8,7 @@ namespace Nezu.Core.ARM11
     struct RegisterArray
     {
         private uint _r0;
-        public readonly int Length => 16;
+        internal static int Length => 16;
     }
 
     /// <summary>
@@ -53,6 +53,8 @@ namespace Nezu.Core.ARM11
             set => GetRegisterRef(index) = value;
         }
 
+        public ref uint PC => ref GetRegisterRef(15);
+
 
         /// <summary>
         /// Switches the register bank that the processor is using based on the requested <see cref="Mode"/>.
@@ -89,7 +91,7 @@ namespace Nezu.Core.ARM11
         public void PrintRegisters()
         {
             Console.WriteLine($"Mode: {_currentMode}");
-            for (int i = 0; i < _registers.Length; i++)
+            for (int i = 0; i < RegisterArray.Length; i++)
             {
                 Console.WriteLine($"R{i}: 0x{_registers[i]:X8}");
             }
@@ -114,7 +116,7 @@ namespace Nezu.Core.ARM11
         public void SetFlag(Flag flag) => CPSR |= (uint)flag;
 
         /// <summary>
-        /// Clears the<paramref name="flag"/> in the <see cref="CPSR"/>.
+        /// Clears the <paramref name="flag"/> in the <see cref="CPSR"/>.
         /// </summary>
         /// <param name="flag">The flag to clear.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -124,7 +126,7 @@ namespace Nezu.Core.ARM11
         /// Conditionally sets the specified <paramref name="flag"/> in the <see cref="CPSR"/> based on <paramref name="condition"/>.
         /// </summary>
         /// <param name="flag">The flag to modify.</param>
-        /// <param name="condition">True to set the flag; false if otherwise.</param>
+        /// <param name="condition">True to set the flag; false otherwise.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ModifyFlag(Flag flag, bool condition) { if (condition) CPSR |= (uint)flag; else CPSR &= ~(uint)flag; }
 
@@ -132,7 +134,7 @@ namespace Nezu.Core.ARM11
         /// Determines whether a specified flag is set in the <see cref="CPSR"/>
         /// </summary>
         /// <param name="flag">The flag to check.</param>
-        /// <returns>True if the flag is set; false if otherwise.</returns>
+        /// <returns>True if the flag is set; false otherwise.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly bool IsFlagSet(Flag flag) => (CPSR & (uint)flag) != 0;
         #endregion

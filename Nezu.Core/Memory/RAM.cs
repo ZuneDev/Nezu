@@ -3,12 +3,12 @@ using System.Runtime.CompilerServices;
 
 namespace Nezu.Core.Memory
 {
-    public unsafe class Memory : IDisposable
+    public unsafe class RAM : IDisposable
     {
         private byte* _ram;
         private readonly nuint _size;
 
-        public Memory(nuint size)
+        public RAM(nuint size)
         {
             _size = size;
             _ram = (byte*)NativeMemory.AllocZeroed(size);

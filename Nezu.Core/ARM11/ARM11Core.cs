@@ -3,29 +3,28 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Nezu.Core.Memory;
 
 namespace Nezu.Core.ARM11
 {
     public partial class ARM11Core : IDisposable
     {
         public RegisterSet Registers = new();
-        public Memory.Memory Memory = new(512);
+        public RAM Memory = new(512);
 
         public ARM11Core()
         {
         }
 
-        private void Step()
-        {
-            // Fetch
-            var instruction = Memory.ReadWord(Registers[15]);
-            
-            // Increment PC
-            Registers[15] += sizeof(uint);
+        private void Step() => DecodeAndExecute(Fetch());
 
-            // Decode & Execute
-            ExecuteInstruction(instruction);
+        private uint Fetch()
+        {
+            uint instruction = Memory.ReadWord(Registers[15]);
+            Registers.PC += sizeof(uint);
+            return instruction;
         }
+
 
         public void Dispose()
         {

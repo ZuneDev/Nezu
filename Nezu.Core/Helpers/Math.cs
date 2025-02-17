@@ -1,12 +1,11 @@
-﻿using System;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
-namespace Nezu.Core
+namespace Nezu.Core.Helpers
 {
     public static class Math
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsBitSet(uint value, byte bit) => (value & (1 << bit)) != 0;
+        public static bool IsBitSet(uint value, byte bit) => (value & 1 << bit) != 0;
 
         /// <summary>
         /// Promotes a signed 24-bit value to a signed 32-bit value.
