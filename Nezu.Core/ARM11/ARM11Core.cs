@@ -19,12 +19,12 @@ namespace Nezu.Core.ARM11
         {
             // Fetch
             var instruction = Memory.ReadWord(Registers[15]);
+            
+            // Increment PC
+            Registers[15] += sizeof(uint);
 
             // Decode & Execute
             ExecuteInstruction(instruction);
-
-            // Increment PC
-            ++Registers[15];
         }
 
         public void Dispose()

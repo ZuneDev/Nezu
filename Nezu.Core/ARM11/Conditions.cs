@@ -37,8 +37,5 @@ namespace Nezu.Core.ARM11
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool IsConditionLT() => Registers.IsFlagSet(Flag.N) != Registers.IsFlagSet(Flag.V);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool IsBitSet(uint value, byte bit) => (value & (1 << bit)) != 0;
     }
 }

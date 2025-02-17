@@ -6,6 +6,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Nezu.Core.Enums;
 
+using static Nezu.Core.Math;
+
 namespace Nezu.Core.ARM11
 {
     public partial class ARM11Core
@@ -45,7 +47,7 @@ namespace Nezu.Core.ARM11
                     }
                     else
                     {
-                        ExecuteDataProcessingImmediateInstruction(instruction);
+                        ExecuteDataProcessingInstruction(instruction);
                     }
                     break;
 
@@ -111,7 +113,16 @@ namespace Nezu.Core.ARM11
 
         private void ExecuteBranchInstruction(uint instruction)
         {
-            throw new NotImplementedException();
+            // See A4.1.5
+            int targetOffset = ExpandToInt32(instruction & 0x7FFFFF) * 4;
+
+            uint pc = Registers[15];
+            bool link = IsBitSet(instruction, 24);
+            if (link)
+                Registers[14] = pc;
+
+            // TODO: Verify this arithmetic
+            Registers[15] = (uint)(pc + targetOffset + 4);
         }
 
         private void ExecuteLoadStoreMultipleInstruction(uint instruction)
@@ -129,11 +140,6 @@ namespace Nezu.Core.ARM11
             throw new NotImplementedException();
         }
 
-        private void ExecuteDataProcessingImmediateInstruction(uint instruction)
-        {
-            throw new NotImplementedException();
-        }
-
         private void ExecuteMoveImmediateToStatusRegisterInstruction(uint instruction)
         {
             throw new NotImplementedException();
@@ -141,7 +147,22 @@ namespace Nezu.Core.ARM11
 
         private void ExecuteDataProcessingInstruction(uint instruction)
         {
-            throw new NotImplementedException();
+            // See A5.1
+            bool immediate = IsBitSet(instruction, 25);
+            uint opcode = (instruction >> 21) & 0b1111;
+            bool S = IsBitSet(instruction, 20);
+            uint Rn = (instruction >> 16) & 0b1111;
+            uint Rd = (instruction >> 12) & 0b1111;
+
+            uint value;
+
+            // TODO: Set C flag
+            if (immediate)
+            {
+                uint rotateValue = (instruction >> 8) & 0b1111;
+                byte rotateAmount = (byte)(instruction & 0xFF);
+                value = uint.RotateRight(rotateValue, rotateAmount * 2);
+            }
         }
 
         private void ExecuteMiscInstruction(uint instruction)
