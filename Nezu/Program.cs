@@ -12,7 +12,7 @@ namespace Nezu
 
             foreach (var mode in modes)
             {
-                registers.UpdateMode(mode);
+                registers.SwitchMode(mode);
 
                 for (int i = 0; i < 16; i++)
                     registers[i] = (uint)(i + ((int)mode << 16));
@@ -22,7 +22,7 @@ namespace Nezu
 
             foreach (var mode in modes)
             {
-                registers.UpdateMode(mode);
+                registers.SwitchMode(mode);
                 registers.PrintRegisters();
             }
         }

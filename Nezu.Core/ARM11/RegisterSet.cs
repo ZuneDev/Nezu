@@ -1,17 +1,29 @@
 ﻿using Nezu.Core.Enums;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace Nezu.Core.ARM11
 {
+    [InlineArray(16)]
+    struct RegisterArray
+    {
+        private uint _r0;
+        public readonly int Length => 16;
+    }
+
     /// <summary>
-    /// Defines the ARM11 register set, with support for mode banking.
+    /// Defines the ARM11 register set, with support for register banking based on the current mode.
     /// </summary>
     public struct RegisterSet
     {
+        // In reality, we have 6 distinct modes, but we are once again indexing based on the mode,
+        // meaning we have 2^5 possible indices. Masking out the MSB could bring us down to 2^4,
+        // but it's really not worth it to add more logic to the mode switch.
         private readonly BankParameters[] bankParams = new BankParameters[32];
+
         private uint[] _bankStore = new uint[22];  // USR/SYS (7 regs, default set), FIQ (7 regs), other 4 modes (2 regs ea.)
-        private uint[] _bankedSpsr = new uint[32]; // In reality, we have 5 SPSRs, but we are once again indexing based on the mode.
-        private uint[] _registers = new uint[16];
+        private uint[] _bankedSpsr = new uint[32]; // 32 for the same reason discussed above.
+        private RegisterArray _registers = new RegisterArray();
         private Mode _currentMode;
 
         public RegisterSet()
@@ -25,13 +37,20 @@ namespace Nezu.Core.ARM11
             bankParams[(uint)Mode.Undefined] =  new BankParameters(13, 20, 2);
 
             _currentMode = Mode.User;
-            UpdateMode(Mode.User);
+            SwitchMode(Mode.User);
+        }
+
+        private unsafe ref uint GetRegisterRef(int index)
+        {
+            Debug.Assert(index >= 0 && index < 16);
+            ref uint first = ref Unsafe.AsRef<uint>(Unsafe.AsPointer(ref _registers));
+            return ref Unsafe.Add(ref first, index);
         }
 
         public uint this[int index]
         {
-            get => _registers[index];
-            set => _registers[index] = value;
+            get => GetRegisterRef(index);
+            set => GetRegisterRef(index) = value;
         }
 
 
@@ -39,7 +58,7 @@ namespace Nezu.Core.ARM11
         /// Switches the register bank that the processor is using based on the requested <see cref="Mode"/>.
         /// </summary>
         /// <param name="newMode">The mode to set the processor to.</param>
-        public void UpdateMode(Mode newMode)
+        public void SwitchMode(Mode newMode)
         {
             // Don't copy anything unless we have to
             if (_currentMode == newMode) return;
