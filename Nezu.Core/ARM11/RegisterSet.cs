@@ -53,6 +53,12 @@ namespace Nezu.Core.ARM11
             set => GetRegisterRef(index) = value;
         }
 
+        public uint this[uint index]
+        {
+            get => GetRegisterRef((int)index);
+            set => GetRegisterRef((int)index) = value;
+        }
+
         // Some shortcuts to make the code a bit cleaner
         public const int LR = 14;
         public const int PC = 15;
