@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Nezu.Core.Memory;
 
+using static Nezu.Core.ARM11.RegisterSet;
+
 namespace Nezu.Core.ARM11
 {
     public partial class ARM11Core : IDisposable
@@ -20,8 +22,8 @@ namespace Nezu.Core.ARM11
 
         private uint Fetch()
         {
-            uint instruction = Memory.ReadWord(Registers.PC);
-            Registers.PC += sizeof(uint);
+            uint instruction = Memory.ReadWord(Registers[PC]);
+            Registers[PC] += sizeof(uint);
             return instruction;
         }
 
