@@ -57,8 +57,54 @@ namespace Nezu.Core.ARM11
 
             switch (opcode)
             {
+                // AND
+                case 0x0:
+
+                // EOR
+                case 0x1:
+
+                // SUB
+                case 0x2:
+
+                // RSB
+                case 0x3:
+
+                // ADD
+                case 0x4:
+
+                // ADC
+                case 0x5:
+
+                // SBC
+                case 0x6:
+
+                // RSC
+                case 0x7:
+
+                // TST
+                case 0x8:
+
+                // TEQ
+                case 0x9:
+
+                // CMP
+                case 0xA:
+
+                // CMN
+                case 0xB:
+
+                // ORR
+                case 0xC:
+
+                // MOV
+                case 0xD:
+
+                // MVN
+                case 0xF:
+                    throw new NotImplementedException();
+
                 // BIC
-                case 0b1110:
+                case 0xE:
                     uint newValue = Registers[Rn] & ~shifterOperand;
                     Registers[Rd] = newValue;
                     if (S)
