@@ -140,6 +140,21 @@ namespace Nezu.Core.ARM11
         public void ModifyFlag(Flag flag, bool condition) { if (condition) CPSR |= (uint)flag; else CPSR &= ~(uint)flag; }
 
         /// <summary>
+        /// Conditionally sets the <see cref="Flag.C"/> in the <see cref="CPSR"/> based on <paramref name="condition"/>.
+        /// </summary>
+        /// <param name="condition">
+        /// <see cref="CarryResult.Set"/> to set the flag;
+        /// <see cref="CarryResult.Unset"> to unset the flag;
+        /// <see cref="CarryResult.Pass"/> to leave the flag as-is.
+        /// </param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void ModifyCarryFlag(CarryResult condition)
+        {
+            if (condition is not CarryResult.Pass)
+                ModifyFlag(Flag.C, condition is CarryResult.Set);
+        }
+
+        /// <summary>
         /// Determines whether a specified flag is set in the <see cref="CPSR"/>
         /// </summary>
         /// <param name="flag">The flag to check.</param>
