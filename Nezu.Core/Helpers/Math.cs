@@ -1,5 +1,5 @@
-﻿using System.Runtime.CompilerServices;
-using Nezu.Core.Enums;
+﻿using Nezu.Core.Enums;
+using System.Runtime.CompilerServices;
 
 namespace Nezu.Core.Helpers
 {

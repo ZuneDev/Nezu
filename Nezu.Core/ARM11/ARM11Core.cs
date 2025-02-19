@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Nezu.Core.Memory;
+﻿using Nezu.Core.Memory;
 
 using static Nezu.Core.ARM11.RegisterSet;
 

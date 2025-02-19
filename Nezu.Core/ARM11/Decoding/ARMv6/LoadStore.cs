@@ -7,11 +7,6 @@
             throw new NotImplementedException();
         }
 
-        private void DecodeLoadStoreMultiple(uint instruction)
-        {
-            throw new NotImplementedException();
-        }
-
         private void DecodeExtraLoadStore(uint instruction)
         {
             throw new NotImplementedException();

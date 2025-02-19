@@ -1,6 +1,5 @@
 ﻿using Nezu.Core.Enums;
 using System.Diagnostics;
-using System.Reflection.Emit;
 using static Nezu.Core.Helpers.Math;
 
 namespace Nezu.Core.ARM11
@@ -23,11 +22,22 @@ namespace Nezu.Core.ARM11
             switch (group)
             {
                 case 0b000:
-                    uint opcode = (instruction >> 21) & 0b1111;
-                    if (!IsBitSet(instruction, 20) && (opcode >> 2) == 0b10)
-                        DecodeMiscInstruction(instruction);
+                    uint opcode;
+                    if ((instruction & 0x90) == 0x90)
+                    {
+                        if (IsBitSet(instruction, 24) || ((instruction >> 5) & 3) != 0)
+                            DecodeExtraLoadStore(instruction);
+                        else
+                            DecodeMultInstruction(instruction);
+                    }
                     else
-                        DecodeDataProcessing(instruction);
+                    {
+                        opcode = (instruction >> 21) & 0b1111;
+                        if (!IsBitSet(instruction, 20) && (opcode >> 2) == 0b10)
+                            DecodeMiscInstruction(instruction);
+                        else
+                            DecodeDataProcessing(instruction);
+                    }
                     break;
 
                 case 0b001:
@@ -36,7 +46,6 @@ namespace Nezu.Core.ARM11
                     {
                         // Assert not undefined instruction
                         Debug.Assert((opcode & 1) != 0);
-
                         DecodeMoveSR(instruction);
                     }
                     else
@@ -62,7 +71,11 @@ namespace Nezu.Core.ARM11
                     }
                     break;
 
-                case 0b100: DecodeLoadStoreMultiple(instruction); break;
+                // Load/Store multiple: See A3-12
+                case 0b100:
+                    if (IsBitSet(instruction, 20)) { /*LDM*/ }
+                    else { /*STM*/ }
+                    break;
 
                 case 0b101: DecodeBranch(instruction); break;
 
