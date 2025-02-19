@@ -38,7 +38,8 @@ namespace Nezu.Core.ARM11
                     uint Rs = shiftAmount >> 1;
                     shiftAmount = Registers[Rs] & 0xFF;
                 }
-                else if (shiftAmount == 0 && shiftMode is ShiftMode.ROR)
+                
+                if (isImmediateShift && shiftAmount is 0 && shiftMode is ShiftMode.ROR)
                 {
                     // See A5.1.13
                     uint C = Registers.IsFlagSet(Flag.C) ? 1u : 0u;
@@ -52,7 +53,30 @@ namespace Nezu.Core.ARM11
                     shifterOperand = Shift(Rm_val, (byte)shiftAmount, shiftMode);
                     shifterCarryOut = Carry(Rm_val, (byte)shiftAmount, shiftMode);
                 }
+            }
 
+            switch (opcode)
+            {
+                // BIC
+                case 0b1110:
+                    uint newValue = Registers[Rn] & ~shifterOperand;
+                    Registers[Rd] = newValue;
+                    if (S)
+                    {
+                        if (Rd is RegisterSet.PC)
+                        {
+                            Registers.CPSR = Registers.SPSR;
+                        }
+                        else
+                        {
+                            Registers.ModifyFlag(Flag.N, IsBitSet(newValue, 31));
+                            Registers.ModifyFlag(Flag.Z, newValue is 0);
+
+                            if (shifterCarryOut is not CarryResult.Pass)
+                                Registers.ModifyFlag(Flag.C, shifterCarryOut is CarryResult.Set);
+                        }
+                    }
+                    break;
             }
         }
     }
