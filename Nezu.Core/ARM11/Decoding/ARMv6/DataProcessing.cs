@@ -80,11 +80,20 @@ namespace Nezu.Core.ARM11
 
                 // ADD
                 case 0x4:
-                    throw new NotImplementedException();
+                    Rd_new = unchecked(Rn_val + shifterOperand);
+                    Registers.ModifyFlag(Flag.C, CarryFrom(Rn_val, shifterOperand));
+                    Registers.ModifyFlag(Flag.V, OverflowFrom(Rn_val, shifterOperand));
+                    break;
 
                 // ADC
                 case 0x5:
-                    throw new NotImplementedException();
+                    uint carryValue = Registers.IsFlagSet(Flag.C) ? 1u : 0;
+                    uint b = shifterOperand + carryValue;
+                    Rd_new = unchecked(Rn_val + b);
+
+                    Registers.ModifyFlag(Flag.C, CarryFrom(Rn_val, b));
+                    Registers.ModifyFlag(Flag.V, OverflowFrom(Rn_val, b));
+                    break;
 
                 // SBC
                 case 0x6:

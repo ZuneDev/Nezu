@@ -140,5 +140,15 @@ namespace Nezu.Core.Helpers
                 _ => throw new NotImplementedException()
             };
         }
+
+        public static bool CarryFrom(uint a, uint b)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static bool OverflowFrom(uint a, uint b)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
