@@ -2,7 +2,7 @@
 {
     public partial class ARM11Core
     {
-        private void ExecuteUnconditional(uint instruction)
+        private void DecodeUnconditional(uint instruction)
         {
             throw new NotImplementedException();
         }

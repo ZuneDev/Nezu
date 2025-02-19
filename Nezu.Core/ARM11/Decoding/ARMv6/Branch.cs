@@ -5,7 +5,7 @@ namespace Nezu.Core.ARM11
 {
     public partial class ARM11Core
     {
-        private void ExecuteBranch(uint instruction)
+        private void DecodeBranch(uint instruction)
         {
             // See A4.1.5
             int targetOffset = ExpandToInt32(instruction & 0x7FFFFF) * 4;

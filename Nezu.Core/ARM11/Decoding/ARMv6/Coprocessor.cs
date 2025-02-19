@@ -2,12 +2,19 @@
 {
     public partial class ARM11Core
     {
-        private void ExecuteCoprocessorInstruction(uint instruction)
+        private void DecodeCoprocessorInstruction(uint instruction)
         {
-            throw new NotImplementedException();
+            if ((instruction & 0b10000) != 0)
+            {
+                // Coproc register transfer
+            }
+            else
+            {
+                // Coproc DP
+            }
         }
 
-        private void ExecuteCoprocessorTransfer(uint instruction)
+        private void DecodeCoprocessorTransfer(uint instruction)
         {
             throw new NotImplementedException();
         }

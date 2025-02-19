@@ -2,7 +2,7 @@
 {
     public partial class ARM11Core
     {
-        private void ExecuteMoveSR(uint instruction)
+        private void DecodeMoveSR(uint instruction)
         {
             throw new NotImplementedException();
         }

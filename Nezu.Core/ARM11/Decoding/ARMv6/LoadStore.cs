@@ -2,12 +2,17 @@
 {
     public partial class ARM11Core
     {
-        private void ExecuteLoadStoreOffset(uint instruction, bool registerIndirect)
+        private void DecodeLoadStoreOffset(uint instruction, bool registerIndirect)
         {
             throw new NotImplementedException();
         }
 
-        private void ExecuteLoadStoreMultiple(uint instruction)
+        private void DecodeLoadStoreMultiple(uint instruction)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void DecodeExtraLoadStore(uint instruction)
         {
             throw new NotImplementedException();
         }

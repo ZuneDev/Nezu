@@ -17,37 +17,33 @@ namespace Nezu.Core.ARM11
 
             // Special unconditional instructions, see Figure A3-6
             if (conditionCode is ConditionCode.UD)
-                ExecuteUnconditional(instruction);
+                DecodeUnconditional(instruction);
 
             uint group = (instruction >> 25) & 0b111;
             switch (group)
             {
                 case 0b000:
                     uint opcode = (instruction >> 21) & 0b1111;
-                    bool s = IsBitSet(instruction, 20);
-                    if ((opcode >> 2) == 0b10 && !s)
-                        ExecuteMiscInstruction(instruction);
+                    if (!IsBitSet(instruction, 20) && (opcode >> 2) == 0b10)
+                        DecodeMiscInstruction(instruction);
                     else
-                        ExecuteDataProcessing(instruction);
+                        DecodeDataProcessing(instruction);
                     break;
 
                 case 0b001:
                     opcode = (instruction >> 21) & 0b1111;
-                    s = IsBitSet(instruction, 20);
-                    if ((opcode >> 2) == 0b10 && !s)
+                    if (!IsBitSet(instruction, 20) && (opcode >> 2) == 0b10)
                     {
                         // Assert not undefined instruction
                         Debug.Assert((opcode & 1) != 0);
 
-                        ExecuteMoveSR(instruction);
+                        DecodeMoveSR(instruction);
                     }
                     else
-                        ExecuteDataProcessing(instruction);
+                        DecodeDataProcessing(instruction);
                     break;
 
-                case 0b010:
-                    ExecuteLoadStoreOffset(instruction, false);
-                    break;
+                case 0b010: DecodeLoadStoreOffset(instruction, false); break;
 
                 case 0b011:
                     if (IsBitSet(instruction, 4))
@@ -58,31 +54,27 @@ namespace Nezu.Core.ARM11
                         bool lowerUnset = ((~instruction >> 4) & 0b1111) != 0;
                         Debug.Assert(higherUnset || lowerUnset);
 #endif
-                        ExecuteMediaInstruction(instruction);
+                        DecodeMediaInstruction(instruction);
                     }
                     else
                     {
-                        ExecuteLoadStoreOffset(instruction, true);
+                        DecodeLoadStoreOffset(instruction, true);
                     }
                     break;
 
-                case 0b100:
-                    ExecuteLoadStoreMultiple(instruction);
-                    break;
+                case 0b100: DecodeLoadStoreMultiple(instruction); break;
 
-                case 0b101:
-                    ExecuteBranch(instruction);
-                    break;
+                case 0b101: DecodeBranch(instruction); break;
 
-                case 0b110:
-                    ExecuteCoprocessorTransfer(instruction);
-                    break;
+                case 0b110: DecodeCoprocessorTransfer(instruction); break;
 
                 case 0b111:
                     if (IsBitSet(instruction, 24))
-                        ExecuteSoftwareInterrupt(instruction);
+                    {
+                        // call SWI impl directly. there is no more decoding to be done; SWI is a single instruction.
+                    }
                     else
-                        ExecuteCoprocessorInstruction(instruction);
+                        DecodeCoprocessorInstruction(instruction);
                     break;
 
                 default:

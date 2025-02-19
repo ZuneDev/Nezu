@@ -2,7 +2,7 @@
 {
     public partial class ARM11Core
     {
-        private void ExecuteMediaInstruction(uint instruction)
+        private void DecodeMediaInstruction(uint instruction)
         {
             throw new NotImplementedException();
         }

@@ -2,7 +2,7 @@
 {
     public partial class ARM11Core
     {
-        private void ExecuteMiscInstruction(uint instruction)
+        private void DecodeMiscInstruction(uint instruction)
         {
             throw new NotImplementedException();
         }

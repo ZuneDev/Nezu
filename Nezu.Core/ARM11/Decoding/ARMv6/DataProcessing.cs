@@ -5,7 +5,7 @@ namespace Nezu.Core.ARM11
 {
     public partial class ARM11Core
     {
-        private void ExecuteDataProcessing(uint instruction)
+        private void DecodeDataProcessing(uint instruction)
         {
             // See A5.1
             bool immediate = IsBitSet(instruction, 25);
