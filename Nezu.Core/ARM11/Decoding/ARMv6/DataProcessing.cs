@@ -26,18 +26,33 @@ namespace Nezu.Core.ARM11
             }
             else
             {
+                uint Rm = (instruction >> 8) & 0b1111;
+                uint Rm_val = Registers[Rm];
+
+                var shiftMode = (ShiftMode)((instruction >> 4) & 0b11);
                 uint shiftAmount = (instruction >> 7) & 0b11111;
                 bool isImmediateShift = IsBitSet(instruction, 4);
+
                 if (!isImmediateShift)
                 {
                     uint Rs = shiftAmount >> 1;
                     shiftAmount = Registers[Rs] & 0xFF;
                 }
+                else if (shiftAmount == 0 && shiftMode is ShiftMode.ROR)
+                {
+                    // See A5.1.13
+                    uint C = Registers.IsFlagSet(Flag.C) ? 1u : 0u;
+                    shifterOperand = LogicalShiftLeft(C, 31) | LogicalShiftRight(Rm_val, 1);
+                    shifterCarryOut = (CarryResult)(Rm_val & 1);
+                }
+                else
+                {
+                    shiftAmount = 32;
 
-                var shiftMode = (ShiftMode)((instruction >> 4) & 0b11);
-                uint Rm = (instruction >> 8) & 0b1111;
+                    shifterOperand = Shift(Rm_val, (byte)shiftAmount, shiftMode);
+                    shifterCarryOut = Carry(Rm_val, (byte)shiftAmount, shiftMode);
+                }
 
-                shifterOperand = LogicalShiftLeftWithCarry(Registers[Rm], (byte)shiftAmount, out shifterCarryOut);
             }
         }
     }
