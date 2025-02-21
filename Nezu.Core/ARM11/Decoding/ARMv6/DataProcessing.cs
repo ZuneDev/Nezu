@@ -17,7 +17,6 @@ namespace Nezu.Core.ARM11
             uint shifterOperand;
             var shifterCarryOut = FlagResult.Pass;
 
-            // TODO: Set C flag
             if (immediate)
             {
                 uint rotateValue = (instruction >> 8) & 0b1111;
