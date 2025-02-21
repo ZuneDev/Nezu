@@ -75,11 +75,21 @@ namespace Nezu.Core.ARM11
 
                 // SUB
                 case 0x2:
-                    throw new NotImplementedException();
+                    shifterOperand = unchecked((uint)(-shifterOperand));
+                    Rd_new = unchecked(Rn_val + shifterOperand);
+
+                    carryOut = CarryFrom(Rn_val, shifterOperand, Rd_new).ToFlagResult();
+                    overflowOut = OverflowFrom(Rn_val, shifterOperand, Rd_new).ToFlagResult();
+                    break;
 
                 // RSB
                 case 0x3:
-                    throw new NotImplementedException();
+                    uint b = unchecked((uint)(-Rn_val));
+                    Rd_new = unchecked(shifterOperand + b);
+
+                    carryOut = CarryFrom(shifterOperand, b, Rd_new).ToFlagResult();
+                    overflowOut = OverflowFrom(shifterOperand, b, Rd_new).ToFlagResult();
+                    break;
 
                 // ADD
                 case 0x4:
@@ -92,7 +102,7 @@ namespace Nezu.Core.ARM11
                 // ADC
                 case 0x5:
                     uint carryValue = Registers.IsFlagSet(Flag.C) ? 1u : 0;
-                    uint b = shifterOperand + carryValue;
+                    b = shifterOperand + carryValue;
                     Rd_new = unchecked(Rn_val + b);
 
                     carryOut = CarryFrom(Rn_val, b, Rd_new).ToFlagResult();
@@ -101,11 +111,23 @@ namespace Nezu.Core.ARM11
 
                 // SBC
                 case 0x6:
-                    throw new NotImplementedException();
+                    carryValue = Registers.IsFlagSet(Flag.C) ? 0 : 1u;
+                    b = unchecked((uint)-(shifterOperand + carryValue));
+                    Rd_new = unchecked(Rn_val + b);
+
+                    carryOut = CarryFrom(Rn_val, b, Rd_new).ToFlagResult();
+                    overflowOut = OverflowFrom(Rn_val, b, Rd_new).ToFlagResult();
+                    break;
 
                 // RSC
                 case 0x7:
-                    throw new NotImplementedException();
+                    carryValue = Registers.IsFlagSet(Flag.C) ? 0 : 1u;
+                    b = unchecked((uint)-(Rn_val + carryValue));
+                    Rd_new = unchecked(shifterOperand + b);
+
+                    carryOut = CarryFrom(shifterOperand, b, Rd_new).ToFlagResult();
+                    overflowOut = OverflowFrom(shifterOperand, b, Rd_new).ToFlagResult();
+                    break;
 
                 // TST
                 case 0x8:
