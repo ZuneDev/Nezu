@@ -147,11 +147,24 @@ namespace Nezu.Core.ARM11
 
                 // CMP
                 case 0xA:
-                    throw new NotImplementedException();
+                    shifterOperand = unchecked((uint)(-shifterOperand));
+                    aluOut = unchecked(Rn_val + shifterOperand);
+
+                    Registers.ModifyFlag(Flag.N, IsBitSet(aluOut, 31));
+                    Registers.ModifyFlag(Flag.Z, aluOut is 0);
+                    Registers.ModifyFlag(Flag.C, CarryFrom(Rn_val, shifterOperand, Rd_new));
+                    Registers.ModifyFlag(Flag.V, OverflowFrom(Rn_val, shifterOperand, Rd_new));
+                    return;
 
                 // CMN
                 case 0xB:
-                    throw new NotImplementedException();
+                    aluOut = unchecked(Rn_val + shifterOperand);
+
+                    Registers.ModifyFlag(Flag.N, IsBitSet(aluOut, 31));
+                    Registers.ModifyFlag(Flag.Z, aluOut is 0);
+                    Registers.ModifyFlag(Flag.C, CarryFrom(Rn_val, shifterOperand, Rd_new));
+                    Registers.ModifyFlag(Flag.V, OverflowFrom(Rn_val, shifterOperand, Rd_new));
+                    return;
 
                 // ORR
                 case 0xC:
