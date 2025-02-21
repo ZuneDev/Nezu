@@ -38,7 +38,7 @@ namespace Nezu.Core.Helpers
             return amount switch
             {
                 0 => FlagResult.Pass,
-                < 32 => IsBitSet(value, (byte)(32 - amount))
+                < 32 => IsBitSet(value, (byte)(32 - amount)).ToFlagResult(),
                     ? FlagResult.Set : FlagResult.Unset,
                 _ => FlagResult.Unset
             };
@@ -62,8 +62,7 @@ namespace Nezu.Core.Helpers
             return amount switch
             {
                 0 => FlagResult.Pass,
-                < 32 => IsBitSet(value, (byte)(amount - 1))
-                    ? FlagResult.Set : FlagResult.Unset,
+                < 32 => IsBitSet(value, (byte)(amount - 1)).ToFlagResult(),
                 _ => FlagResult.Unset
             };
         }
@@ -88,10 +87,8 @@ namespace Nezu.Core.Helpers
             return amount switch
             {
                 0 => FlagResult.Pass,
-                < 32 => IsBitSet(value, (byte)(amount - 1))
-                    ? FlagResult.Set : FlagResult.Unset,
-                _ => IsBitSet(value, 31)
-                    ? FlagResult.Set : FlagResult.Unset,
+                < 32 => IsBitSet(value, (byte)(amount - 1)).ToFlagResult(),
+                _ => IsBitSet(value, 31).ToFlagResult(),
             };
         }
 
@@ -105,16 +102,15 @@ namespace Nezu.Core.Helpers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static FlagResult CarryRotateRight(uint value, byte amount)
         {
-            if (amount == 0)
+            if (amount is 0)
                 return FlagResult.Pass;
 
             byte effectiveAmount = (byte)(amount & 0b11111);
-            byte carryBit = (byte)(effectiveAmount == 0
+            byte carryBit = (byte)(effectiveAmount is 0
                 ? 31
                 : effectiveAmount - 1);
 
-            return IsBitSet(value, carryBit)
-                ? FlagResult.Set : FlagResult.Unset;
+            return IsBitSet(value, carryBit).ToFlagResult();
         }
 
         public static uint Shift(uint value, byte amount, ShiftMode mode)
