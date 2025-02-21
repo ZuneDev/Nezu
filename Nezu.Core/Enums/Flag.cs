@@ -37,6 +37,6 @@
         Z = 1 << 30,
 
         /// <summary>Indicates a negative result</summary>
-        N = (uint)1 << 31
+        N = 1u << 31
     }
 }

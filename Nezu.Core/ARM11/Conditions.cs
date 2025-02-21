@@ -22,7 +22,7 @@ namespace Nezu.Core.ARM11
             ConditionCode.GT => !Registers.IsFlagSet(Flag.Z) && IsConditionGE(),
             ConditionCode.LE => Registers.IsFlagSet(Flag.Z) || IsConditionLT(),
             ConditionCode.AL => true,
-            ConditionCode.UD => false,
+            ConditionCode.UD => true,
             _ => false
         };
 
