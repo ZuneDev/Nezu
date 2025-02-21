@@ -9,7 +9,6 @@
 
   <ItemGroup>
     <Folder Include="ARM11\Decoding\Thumb\" />
-    <Folder Include="ARM11\Instructions\" />
   </ItemGroup>
 
 </Project>
