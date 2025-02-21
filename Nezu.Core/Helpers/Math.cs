@@ -33,14 +33,14 @@ namespace Nezu.Core.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static CarryResult CarryLogicalShiftLeft(uint value, byte amount)
+        public static FlagResult CarryLogicalShiftLeft(uint value, byte amount)
         {
             return amount switch
             {
-                0 => CarryResult.Pass,
+                0 => FlagResult.Pass,
                 < 32 => IsBitSet(value, (byte)(32 - amount))
-                    ? CarryResult.Set : CarryResult.Unset,
-                _ => CarryResult.Unset
+                    ? FlagResult.Set : FlagResult.Unset,
+                _ => FlagResult.Unset
             };
         }
 
@@ -57,14 +57,14 @@ namespace Nezu.Core.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static CarryResult CarryLogicalShiftRight(uint value, byte amount)
+        public static FlagResult CarryLogicalShiftRight(uint value, byte amount)
         {
             return amount switch
             {
-                0 => CarryResult.Pass,
+                0 => FlagResult.Pass,
                 < 32 => IsBitSet(value, (byte)(amount - 1))
-                    ? CarryResult.Set : CarryResult.Unset,
-                _ => CarryResult.Unset
+                    ? FlagResult.Set : FlagResult.Unset,
+                _ => FlagResult.Unset
             };
         }
 
@@ -83,15 +83,15 @@ namespace Nezu.Core.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static CarryResult CarryArithmeticShiftRight(uint value, byte amount)
+        public static FlagResult CarryArithmeticShiftRight(uint value, byte amount)
         {
             return amount switch
             {
-                0 => CarryResult.Pass,
+                0 => FlagResult.Pass,
                 < 32 => IsBitSet(value, (byte)(amount - 1))
-                    ? CarryResult.Set : CarryResult.Unset,
+                    ? FlagResult.Set : FlagResult.Unset,
                 _ => IsBitSet(value, 31)
-                    ? CarryResult.Set : CarryResult.Unset,
+                    ? FlagResult.Set : FlagResult.Unset,
             };
         }
 
@@ -103,10 +103,10 @@ namespace Nezu.Core.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static CarryResult CarryRotateRight(uint value, byte amount)
+        public static FlagResult CarryRotateRight(uint value, byte amount)
         {
             if (amount == 0)
-                return CarryResult.Pass;
+                return FlagResult.Pass;
 
             byte effectiveAmount = (byte)(amount & 0b11111);
             byte carryBit = (byte)(effectiveAmount == 0
@@ -114,7 +114,7 @@ namespace Nezu.Core.Helpers
                 : effectiveAmount - 1);
 
             return IsBitSet(value, carryBit)
-                ? CarryResult.Set : CarryResult.Unset;
+                ? FlagResult.Set : FlagResult.Unset;
         }
 
         public static uint Shift(uint value, byte amount, ShiftMode mode)
@@ -129,7 +129,7 @@ namespace Nezu.Core.Helpers
             };
         }
 
-        public static CarryResult Carry(uint value, byte amount, ShiftMode mode)
+        public static FlagResult ShiftCarry(uint value, byte amount, ShiftMode mode)
         {
             return mode switch
             {

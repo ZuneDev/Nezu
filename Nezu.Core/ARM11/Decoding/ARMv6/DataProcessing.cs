@@ -15,7 +15,7 @@ namespace Nezu.Core.ARM11
             uint Rd = (instruction >> 12) & 0b1111;
 
             uint shifterOperand;
-            var shifterCarryOut = CarryResult.Pass;
+            var shifterCarryOut = FlagResult.Pass;
 
             // TODO: Set C flag
             if (immediate)
@@ -44,7 +44,7 @@ namespace Nezu.Core.ARM11
                     // See A5.1.13
                     uint C = Registers.IsFlagSet(Flag.C) ? 1u : 0u;
                     shifterOperand = LogicalShiftLeft(C, 31) | LogicalShiftRight(Rm_val, 1);
-                    shifterCarryOut = (CarryResult)(Rm_val & 1);
+                    shifterCarryOut = (FlagResult)(Rm_val & 1);
                 }
                 else
                 {
