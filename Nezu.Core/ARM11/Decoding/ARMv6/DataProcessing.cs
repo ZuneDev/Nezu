@@ -51,12 +51,15 @@ namespace Nezu.Core.ARM11
                     shiftAmount = 32;
 
                     shifterOperand = Shift(Rm_val, (byte)shiftAmount, shiftMode);
-                    shifterCarryOut = Carry(Rm_val, (byte)shiftAmount, shiftMode);
+                    shifterCarryOut = ShiftCarry(Rm_val, (byte)shiftAmount, shiftMode);
                 }
             }
 
             uint Rd_new = 0;
             uint Rn_val = Registers[Rn];
+
+            var carryOut = shifterCarryOut;
+            var overflowOut = FlagResult.Pass;
 
             switch (opcode)
             {
@@ -81,8 +84,9 @@ namespace Nezu.Core.ARM11
                 // ADD
                 case 0x4:
                     Rd_new = unchecked(Rn_val + shifterOperand);
-                    Registers.ModifyFlag(Flag.C, CarryFrom(Rn_val, shifterOperand));
-                    Registers.ModifyFlag(Flag.V, OverflowFrom(Rn_val, shifterOperand));
+
+                    carryOut = CarryFrom(Rn_val, shifterOperand, Rd_new).ToFlagResult();
+                    overflowOut = OverflowFrom(Rn_val, shifterOperand, Rd_new).ToFlagResult();
                     break;
 
                 // ADC
@@ -91,8 +95,8 @@ namespace Nezu.Core.ARM11
                     uint b = shifterOperand + carryValue;
                     Rd_new = unchecked(Rn_val + b);
 
-                    Registers.ModifyFlag(Flag.C, CarryFrom(Rn_val, b));
-                    Registers.ModifyFlag(Flag.V, OverflowFrom(Rn_val, b));
+                    carryOut = CarryFrom(Rn_val, b, Rd_new).ToFlagResult();
+                    overflowOut = OverflowFrom(Rn_val, b, Rd_new).ToFlagResult();
                     break;
 
                 // SBC
@@ -108,7 +112,7 @@ namespace Nezu.Core.ARM11
                     uint aluOut = Rn_val & shifterOperand;
                     Registers.ModifyFlag(Flag.N, IsBitSet(aluOut, 31));
                     Registers.ModifyFlag(Flag.Z, aluOut is 0);
-                    Registers.ModifyCarryFlag(shifterCarryOut);
+                    Registers.ModifyFlag(Flag.C, carryOut);
                     return;
 
                 // TEQ
@@ -116,7 +120,7 @@ namespace Nezu.Core.ARM11
                     aluOut = Rn_val ^ shifterOperand;
                     Registers.ModifyFlag(Flag.N, IsBitSet(aluOut, 31));
                     Registers.ModifyFlag(Flag.Z, aluOut is 0);
-                    Registers.ModifyCarryFlag(shifterCarryOut);
+                    Registers.ModifyFlag(Flag.C, carryOut);
                     return;
 
                 // CMP
@@ -160,7 +164,8 @@ namespace Nezu.Core.ARM11
                 {
                     Registers.ModifyFlag(Flag.N, IsBitSet(Rd_new, 31));
                     Registers.ModifyFlag(Flag.Z, Rd_new is 0);
-                    Registers.ModifyCarryFlag(shifterCarryOut);
+                    Registers.ModifyFlag(Flag.C, carryOut);
+                    Registers.ModifyFlag(Flag.V, overflowOut);
                 }
             }
         }

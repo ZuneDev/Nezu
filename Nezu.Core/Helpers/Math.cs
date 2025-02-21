@@ -39,7 +39,6 @@ namespace Nezu.Core.Helpers
             {
                 0 => FlagResult.Pass,
                 < 32 => IsBitSet(value, (byte)(32 - amount)).ToFlagResult(),
-                    ? FlagResult.Set : FlagResult.Unset,
                 _ => FlagResult.Unset
             };
         }
@@ -137,14 +136,10 @@ namespace Nezu.Core.Helpers
             };
         }
 
-        public static bool CarryFrom(uint a, uint b)
-        {
-            throw new NotImplementedException();
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool CarryFrom(uint a, uint b, uint c) => a > c;
 
-        public static bool OverflowFrom(uint a, uint b)
-        {
-            throw new NotImplementedException();
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool OverflowFrom(uint a, uint b, uint c) => (IsBitSet(a, 31) && IsBitSet(b, 31)) != IsBitSet(c, 31);
     }
 }
