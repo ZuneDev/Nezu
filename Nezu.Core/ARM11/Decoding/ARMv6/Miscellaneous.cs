@@ -30,7 +30,7 @@ namespace Nezu.Core.ARM11
                     break;
 
                 case 0b0001:
-                    if (IsBitSet(instruction, 22)) { /* CLZ */ }
+                    if (IsBitSet(instruction, 22)) ARM_CLZ(instruction);
                     else { /* BX */ }
                     break;
 
