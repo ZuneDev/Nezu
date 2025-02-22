@@ -73,8 +73,8 @@ namespace Nezu.Core.ARM11
 
                 // Load/Store multiple: See A3-12
                 case 0b100:
-                    if (IsBitSet(instruction, 20)) { /*LDM*/ }
-                    else { /*STM*/ }
+                    if (IsBitSet(instruction, 20)) ARM_LDM(instruction);
+                    else ARM_STM(instruction);
                     break;
 
                 case 0b101: DecodeBranch(instruction); break;
