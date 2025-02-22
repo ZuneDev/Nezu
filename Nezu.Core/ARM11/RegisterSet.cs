@@ -24,7 +24,7 @@ namespace Nezu.Core.ARM11
         private uint[] _bankStore = new uint[22];  // USR/SYS (7 regs, default set), FIQ (7 regs), other 4 modes (2 regs ea.)
         private uint[] _bankedSpsr = new uint[6];  // 6 distinct modes, usr/sys don't use SPSR, but our bank switch relies on it anyways.
         private RegisterArray _registers = new RegisterArray();
-        private Mode _currentMode;
+        public Mode CurrentMode { get; private set; }
 
         public RegisterSet()
         {
@@ -36,11 +36,11 @@ namespace Nezu.Core.ARM11
             bankParams[(uint)Mode.Abort] =      new BankParameters(13, 18, 2, 4);
             bankParams[(uint)Mode.Undefined] =  new BankParameters(13, 20, 2, 5);
 
-            _currentMode = Mode.User;
+            CurrentMode = Mode.User;
             SwitchMode(Mode.User);
         }
 
-        private unsafe ref uint GetRegisterRef(int index)
+        internal unsafe ref uint GetRegisterRef(int index)
         {
             Debug.Assert(index >= 0 && index < 16);
             ref uint first = ref Unsafe.AsRef<uint>(Unsafe.AsPointer(ref _registers));
@@ -71,10 +71,10 @@ namespace Nezu.Core.ARM11
         public void SwitchMode(Mode newMode)
         {
             // Don't copy anything unless we have to
-            if (_currentMode == newMode) return;
+            if (CurrentMode == newMode) return;
 
             // Copy state into respective bank
-            BankParameters currentCopy = bankParams[(uint)_currentMode];
+            BankParameters currentCopy = bankParams[(uint)CurrentMode];
             for (int i = 0; i < currentCopy.RegisterCount; i++)
                 _bankStore[currentCopy.BankIndex + i] = _registers[currentCopy.ActiveSetIndex + i];
 
@@ -83,7 +83,7 @@ namespace Nezu.Core.ARM11
 
             // Copy in r8-r12 from the user bank if we're leaving FIQ and entering anything except for USR/SYS.
             // We do not need to copy r13 or r14 because every other mode overwrites them anyways.
-            if (_currentMode is Mode.FIQ && (newMode is not Mode.User && newMode is not Mode.System))
+            if (CurrentMode is Mode.FIQ && (newMode is not Mode.User && newMode is not Mode.System))
                 for (int i = 0; i < 5; i++) _registers[8 + i] = _bankStore[i];
 
             // Copy new bank into working set
@@ -94,12 +94,12 @@ namespace Nezu.Core.ARM11
             SPSR = _bankedSpsr[newCopy.SPSRIndex];
             CPSR = SPSR;
 
-            _currentMode = newMode;
+            CurrentMode = newMode;
         }
 
         public void PrintRegisters()
         {
-            Console.WriteLine($"Mode: {_currentMode}");
+            Console.WriteLine($"Mode: {CurrentMode}");
             for (int i = 0; i < RegisterArray.Length; i++)
             {
                 Console.WriteLine($"R{i}: 0x{_registers[i]:X8}");
