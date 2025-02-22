@@ -19,13 +19,13 @@ namespace Nezu.Core.ARM11
                 DecodeUnconditional(instruction);
 
             uint group = (instruction >> 25) & 0b111;
+            uint opcode;
             switch (group)
             {
                 case 0b000:
-                    uint opcode;
                     if ((instruction & 0x90) == 0x90)
                     {
-                        if (IsBitSet(instruction, 24) || ((instruction >> 5) & 3) != 0)
+                        if (IsBitSet(instruction, 24) || ((instruction >> 5) & 0b11) != 0)
                             DecodeExtraLoadStore(instruction);
                         else
                             DecodeMultInstruction(instruction);
