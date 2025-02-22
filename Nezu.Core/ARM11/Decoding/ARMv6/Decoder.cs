@@ -6,7 +6,7 @@ namespace Nezu.Core.ARM11
 {
     public partial class ARM11Core
     {
-        private void DecodeAndExecute(uint instruction)
+        private void DecodeAndExecuteARM(uint instruction)
         {
             var conditionCode = (ConditionCode)(instruction >> 28);
             if (!IsConditionSet(conditionCode))

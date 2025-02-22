@@ -7,8 +7,4 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Folder Include="ARM11\Decoding\Thumb\" />
-  </ItemGroup>
-
 </Project>

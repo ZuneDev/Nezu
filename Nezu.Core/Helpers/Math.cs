@@ -1,4 +1,5 @@
 ﻿using Nezu.Core.Enums;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 
 namespace Nezu.Core.Helpers
@@ -7,6 +8,15 @@ namespace Nezu.Core.Helpers
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsBitSet(uint value, byte bit) => (value & 1 << bit) != 0;
+
+        /// <summary>
+        /// Gets the amount of set bits inside of a <see cref="uint"/>.
+        /// </summary>
+        /// <param name="value">The value to check the population count of.</param>
+        /// <returns>The amount of set bits (population count) in the <paramref name="value"/>.</returns>
+        /// <remarks>This method relies on the <see cref="BitOperations.PopCount(uint)"/> operation, which is not CLS-compliant.</remarks>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static uint SetBitCount(uint value) => (uint)BitOperations.PopCount(value);
 
         /// <summary>
         /// Promotes a signed 24-bit value to a signed 32-bit value.
