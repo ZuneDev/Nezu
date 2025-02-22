@@ -16,7 +16,6 @@ namespace Nezu.Core.ARM11
         public ARM11Core()
         {
             SetModeARM();
-            DecodeAndExecuteFunc(this, 0xE890003E);
         }
 
         private void Step() => DecodeAndExecuteFunc(this, FetchFunc(this));

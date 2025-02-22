@@ -105,7 +105,7 @@ namespace Nezu.Core.ARM11
                 Console.WriteLine($"R{i}: 0x{_registers[i]:X8}");
             }
             Console.WriteLine($"CPSR: 0x{CPSR:X8}");
-            Console.WriteLine($"SPSR: 0x{SPSR:X8}");
+            if (CurrentMode is not Mode.User && CurrentMode is not Mode.System) Console.WriteLine($"SPSR: 0x{SPSR:X8}");
             Console.WriteLine(new string('-', 30));
         }
 

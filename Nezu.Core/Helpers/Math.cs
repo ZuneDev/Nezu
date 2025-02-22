@@ -7,7 +7,7 @@ namespace Nezu.Core.Helpers
     public static class Math
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsBitSet(uint value, byte bit) => (value & 1 << bit) != 0;
+        public static bool IsBitSet(uint value, byte bit) => ((value >> bit) & 1) != 0;
 
         /// <summary>
         /// Gets the amount of set bits inside of a <see cref="uint"/>.
@@ -32,95 +32,100 @@ namespace Nezu.Core.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool CarryFrom(uint a, uint b, uint c) => a > c;
+
+        // Equivalent operation: (IsBitSet(a, 31) && IsBitSet(b, 31)) != IsBitSet(c, 31)
+        // By ANDing A and B with 0x80000000, we check if both their 31st bits are set.
+        // XORing the result with C's 31st bit tells us if the sign bit of C differs from A and B.
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool OverflowFrom(uint a, uint b, uint c) => ((a & b & 0x80000000) ^ (c & 0x80000000)) != 0;
+
+
+        // The mask is set to 0xFFFFFFFF when the amount is less than 32; otherwise, it is 0.
+        // This ensures that any amount over 31 will result in the entire output being zeroed out.
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint LogicalShiftLeft(uint value, byte amount)
         {
-            return amount switch
-            {
-                0 => value,
-                < 32 => value << amount,
-                _ => 0
-            };
+            uint mask = (uint)((amount - 32) >> 31);
+            return (value << (amount & 31)) & mask;
         }
 
+        // Perform an LSL and check for a carry, then, return the flag based on the mask and carry bit.
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static FlagResult CarryLogicalShiftLeft(uint value, byte amount)
         {
-            return amount switch
-            {
-                0 => FlagResult.Pass,
-                < 32 => IsBitSet(value, (byte)(32 - amount)).ToFlagResult(),
-                _ => FlagResult.Unset
-            };
+            if (amount == 0)
+                return FlagResult.Pass;
+
+            uint mask = (uint)((amount - 32) >> 31);
+            byte carryPos = (byte)(32 - amount);
+            uint carry = (value >> carryPos) & 1;
+            return (FlagResult)((carry & mask) | (uint)(FlagResult.Unset));
         }
 
+
+        // The mask is set to 0xFFFFFFFF when the amount is less than 32; otherwise, it is 0.
+        // This ensures that any amount over 31 will result in the entire output being zeroed out.
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint LogicalShiftRight(uint value, byte amount)
         {
-            // See A5.1.8
-            return amount switch
-            {
-                0 => value,
-                < 32 => value >> amount,
-                _ => 0
-            };
+            uint mask = (uint)((amount - 32) >> 31);
+            return (value >> (amount & 31)) & mask;
         }
 
+        // Perform an LSR and check for a carry, then, return the flag based on the mask and carry bit.
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static FlagResult CarryLogicalShiftRight(uint value, byte amount)
         {
-            return amount switch
-            {
-                0 => FlagResult.Pass,
-                < 32 => IsBitSet(value, (byte)(amount - 1)).ToFlagResult(),
-                _ => FlagResult.Unset
-            };
+            if (amount == 0)
+                return FlagResult.Pass;
+
+            uint mask = (uint)((amount - 32) >> 31);
+            byte carryPos = (byte)((amount - 1) & 31);
+            uint carry = (value >> carryPos) & 1;
+            return (FlagResult)((carry & mask) | (uint)FlagResult.Unset);
         }
+
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint ArithmeticShiftRight(uint value, byte amount)
         {
-            // See A5.1.10
-            return amount switch
-            {
-                0 => value,
-                < 32 => unchecked((uint)((int)value >> amount)),
-                _ => unchecked((int)value) >= 0
-                    ? 0
-                    : uint.MaxValue
-            };
+            // Check MSB to handle shift overflows
+            if (amount >= 32) return (value & 0x80000000) != 0 ? 0xFFFFFFFF : 0;
+            return (uint)((int)value >> amount);
         }
 
+        // Perform an ASR and check for a carry (or carry overflow), then, return the flag based on the mask and carry bit.
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static FlagResult CarryArithmeticShiftRight(uint value, byte amount)
         {
-            return amount switch
-            {
-                0 => FlagResult.Pass,
-                < 32 => IsBitSet(value, (byte)(amount - 1)).ToFlagResult(),
-                _ => IsBitSet(value, 31).ToFlagResult(),
-            };
+            if (amount == 0)
+                return FlagResult.Pass;
+
+            uint mask = (uint)((amount - 32) >> 31);
+            byte carryPos = (byte)((amount - 1) & 31);
+            uint carry = (value >> carryPos) & 1;
+            uint largeCarry = (value >> 31) & 1;
+            return (FlagResult)((carry & mask) | (largeCarry & ~mask));
         }
+
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint RotateRight(uint value, byte amount)
-        {
-            // See A5.1.12
-            return uint.RotateRight(value, amount);
-        }
+        public static uint RotateRight(uint value, byte amount) => uint.RotateRight(value, amount);
 
+        // Perform an ROR and check for a carry, then, return the flag based on the mask and carry bit.
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static FlagResult CarryRotateRight(uint value, byte amount)
         {
-            if (amount is 0)
+            if (amount == 0)
                 return FlagResult.Pass;
 
-            byte effectiveAmount = (byte)(amount & 0b11111);
-            byte carryBit = (byte)(effectiveAmount is 0
-                ? 31
-                : effectiveAmount - 1);
+            byte effectiveAmount = (byte)(amount & 31);
+            byte carryBit = (byte)((effectiveAmount - 1) & 31);
 
             return IsBitSet(value, carryBit).ToFlagResult();
         }
+
 
         public static uint Shift(uint value, byte amount, ShiftMode mode)
         {
@@ -145,11 +150,5 @@ namespace Nezu.Core.Helpers
                 _ => throw new NotImplementedException()
             };
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool CarryFrom(uint a, uint b, uint c) => a > c;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool OverflowFrom(uint a, uint b, uint c) => (IsBitSet(a, 31) && IsBitSet(b, 31)) != IsBitSet(c, 31);
     }
 }
