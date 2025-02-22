@@ -113,7 +113,7 @@ namespace Nezu.Core.Helpers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint RotateRight(uint value, byte amount) => uint.RotateRight(value, amount);
 
-        // Perform an ROR and check for a carry, then, return the flag based on the mask and carry bit.
+        // Perform an ROR and check for a carry, then, return the flag based on that carry bit
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static FlagResult CarryRotateRight(uint value, byte amount)
         {
