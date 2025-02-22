@@ -47,7 +47,7 @@ namespace Nezu.Core.Helpers
         public static uint LogicalShiftLeft(uint value, byte amount)
         {
             uint mask = (uint)((amount - 32) >> 31);
-            return (value << (amount & 31)) & mask;
+            return (value << amount) & mask;
         }
 
         // Perform an LSL and check for a carry, then, return the flag based on the mask and carry bit.
@@ -70,7 +70,7 @@ namespace Nezu.Core.Helpers
         public static uint LogicalShiftRight(uint value, byte amount)
         {
             uint mask = (uint)((amount - 32) >> 31);
-            return (value >> (amount & 31)) & mask;
+            return (value >> amount) & mask;
         }
 
         // Perform an LSR and check for a carry, then, return the flag based on the mask and carry bit.
