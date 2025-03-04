@@ -11,13 +11,13 @@ namespace Nezu.Core.ARM11
     {
         private void ARM_BLX_1(uint instruction)
         {
-            int addr = ExpandToInt32(instruction & 0xFFFFFF);
+            int target = ExpandToInt32(instruction & 0xFFFFFF);
             uint h = (instruction >> 24) & 1;
             uint pc = Registers[PC];
 
             Registers[LR] = pc + 4;
             SetModeThumb();
-            Registers[PC] = (uint)(pc + (addr << 2) + (h << 1));
+            Registers[PC] = (uint)(pc + (target << 2) + (h << 1));
         }
 
         private void ARM_BLX_2(uint instruction)
@@ -42,6 +42,16 @@ namespace Nezu.Core.ARM11
                 SetModeThumb();
             else
                 SetModeARM();
+        }
+
+        private void ARM_B_L(uint instruction)
+        {
+            int target = ExpandToInt32(instruction & 0xFFFFFF);
+            bool link = IsBitSet(instruction, 24);
+            uint pc = Registers[PC];
+
+            if (link) Registers[LR] = pc + 4;
+            Registers[PC] = (uint)(pc + (target << 2));
         }
     }
 }

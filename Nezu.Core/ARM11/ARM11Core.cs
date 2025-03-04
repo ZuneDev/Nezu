@@ -15,7 +15,23 @@ namespace Nezu.Core.ARM11
 
         public ARM11Core()
         {
+            Memory.WriteWord(0x00, 0xE3A0000A);
+            Memory.WriteWord(0x04, 0xE3A01003);
+            Memory.WriteWord(0x08, 0xEBFFFFFE);
+            Memory.WriteWord(0x0C, 0xE0800001);
+            Memory.WriteWord(0x10, 0xE12FFF1E);
             SetModeARM();
+            Step();
+            Registers.PrintRegisters();
+            Step();
+            Registers.PrintRegisters();
+            Step();
+            Registers.PrintRegisters();
+            Step();
+            Registers.PrintRegisters();
+            Step();
+            Registers.PrintRegisters();
+            Step();
         }
 
         private void Step() => DecodeExecFunc(this, FetchFunc(this));

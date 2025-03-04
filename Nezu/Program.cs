@@ -7,6 +7,8 @@ namespace Nezu
     {
         static void Main(string[] args)
         {
+            ARM11Core core = new();
+
             RegisterSet registers = new RegisterSet();
             Mode[] modes = { Mode.User, Mode.FIQ, Mode.Supervisor, Mode.Abort, Mode.IRQ, Mode.Undefined, Mode.System };
 

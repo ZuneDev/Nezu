@@ -77,7 +77,8 @@ namespace Nezu.Core.ARM11
                     else ARM_STM(instruction);
                     break;
 
-                case 0b101: DecodeBranch(instruction); break;
+                // Handles both B and BL
+                case 0b101: ARM_B_L(instruction); break;
 
                 case 0b110: DecodeCoprocessorTransfer(instruction); break;
 
