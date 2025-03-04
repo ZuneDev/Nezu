@@ -11,14 +11,14 @@ namespace Nezu.Core.ARM11
         public RAM Memory = new(512);
 
         private delegate*<ARM11Core, uint> FetchFunc;
-        private delegate*<ARM11Core, uint, void> DecodeAndExecuteFunc;
+        private delegate*<ARM11Core, uint, void> DecodeExecFunc;
 
         public ARM11Core()
         {
             SetModeARM();
         }
 
-        private void Step() => DecodeAndExecuteFunc(this, FetchFunc(this));
+        private void Step() => DecodeExecFunc(this, FetchFunc(this));
 
         private static uint FetchARMWrapper(ARM11Core core) => core.FetchARM();
         private static uint FetchThumbWrapper(ARM11Core core) => core.FetchThumb();
@@ -43,14 +43,14 @@ namespace Nezu.Core.ARM11
         private void SetModeARM()
         {
             FetchFunc = &FetchARMWrapper;
-            DecodeAndExecuteFunc = &DecodeAndExecuteARMWrapper;
+            DecodeExecFunc = &DecodeAndExecuteARMWrapper;
             Registers.ClearFlag(Flag.Thumb);
         }
 
         private void SetModeThumb()
         {
             FetchFunc = &FetchThumbWrapper;
-            DecodeAndExecuteFunc = &DecodeAndExecuteThumbWrapper;
+            DecodeExecFunc = &DecodeAndExecuteThumbWrapper;
             Registers.SetFlag(Flag.Thumb);
         }
 

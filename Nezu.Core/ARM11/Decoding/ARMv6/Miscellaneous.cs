@@ -26,17 +26,17 @@ namespace Nezu.Core.ARM11
             {
                 case 0b0000:
                     if (IsBitSet(instruction, 21)) { /* MSR */ }
-                    else { /* MRS */ }
+                    else ARM_MRS(instruction, IsBitSet(instruction, 22));
                     break;
 
                 case 0b0001:
                     if (IsBitSet(instruction, 22)) ARM_CLZ(instruction);
-                    else { /* BX */ }
+                    else ARM_BX(instruction);
                     break;
 
                 case 0b0010: /* BXJ */ break;
 
-                case 0b0011: /* BLX_2 */ break;
+                case 0b0011: ARM_BLX_2(instruction); break;
 
                 case 0b0101:
                     switch ((instruction >> 21) & 0b11)

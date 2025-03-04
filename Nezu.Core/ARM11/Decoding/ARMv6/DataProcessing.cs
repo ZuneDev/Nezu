@@ -10,9 +10,9 @@ namespace Nezu.Core.ARM11
             // See A5.1
             bool immediate = IsBitSet(instruction, 25);
             uint opcode = (instruction >> 21) & 0b1111;
-            bool S = IsBitSet(instruction, 20);
-            uint Rn = (instruction >> 16) & 0b1111;
-            uint Rd = (instruction >> 12) & 0b1111;
+            bool s = IsBitSet(instruction, 20);
+            uint rn = (instruction >> 16) & 0b1111;
+            uint rd = (instruction >> 12) & 0b1111;
 
             uint shifterOperand;
             var shifterCarryOut = FlagResult.Pass;
@@ -25,8 +25,8 @@ namespace Nezu.Core.ARM11
             }
             else
             {
-                uint Rm = (instruction >> 8) & 0b1111;
-                uint Rm_val = Registers[Rm];
+                uint rm = (instruction >> 8) & 0b1111;
+                uint rmVal = Registers[rm];
 
                 var shiftMode = (ShiftMode)((instruction >> 4) & 0b11);
                 uint shiftAmount = (instruction >> 7) & 0b11111;
@@ -42,20 +42,20 @@ namespace Nezu.Core.ARM11
                 {
                     // See A5.1.13
                     uint C = Registers.IsFlagSet(Flag.C) ? 1u : 0u;
-                    shifterOperand = LogicalShiftLeft(C, 31) | LogicalShiftRight(Rm_val, 1);
-                    shifterCarryOut = (FlagResult)(Rm_val & 1);
+                    shifterOperand = LogicalShiftLeft(C, 31) | LogicalShiftRight(rmVal, 1);
+                    shifterCarryOut = (FlagResult)(rmVal & 1);
                 }
                 else
                 {
                     shiftAmount = 32;
 
-                    shifterOperand = Shift(Rm_val, (byte)shiftAmount, shiftMode);
-                    shifterCarryOut = ShiftCarry(Rm_val, (byte)shiftAmount, shiftMode);
+                    shifterOperand = Shift(rmVal, (byte)shiftAmount, shiftMode);
+                    shifterCarryOut = ShiftCarry(rmVal, (byte)shiftAmount, shiftMode);
                 }
             }
 
-            uint Rd_new = 0;
-            uint Rn_val = Registers[Rn];
+            uint rdNew = 0;
+            uint rnVal = Registers[rn];
 
             var carryOut = shifterCarryOut;
             var overflowOut = FlagResult.Pass;
@@ -64,73 +64,73 @@ namespace Nezu.Core.ARM11
             {
                 // AND
                 case 0x0:
-                    Rd_new = Rn_val & shifterOperand;
+                    rdNew = rnVal & shifterOperand;
                     break;
 
                 // EOR
                 case 0x1:
-                    Rd_new = Rn_val ^ shifterOperand;
+                    rdNew = rnVal ^ shifterOperand;
                     break;
 
                 // SUB
                 case 0x2:
                     shifterOperand = unchecked((uint)(-shifterOperand));
-                    Rd_new = unchecked(Rn_val + shifterOperand);
+                    rdNew = unchecked(rnVal + shifterOperand);
 
-                    carryOut = CarryFrom(Rn_val, shifterOperand, Rd_new).ToFlagResult();
-                    overflowOut = OverflowFrom(Rn_val, shifterOperand, Rd_new).ToFlagResult();
+                    carryOut = CarryFrom(rnVal, shifterOperand, rdNew).ToFlagResult();
+                    overflowOut = OverflowFrom(rnVal, shifterOperand, rdNew).ToFlagResult();
                     break;
 
                 // RSB
                 case 0x3:
-                    uint b = unchecked((uint)(-Rn_val));
-                    Rd_new = unchecked(shifterOperand + b);
+                    uint b = unchecked((uint)(-rnVal));
+                    rdNew = unchecked(shifterOperand + b);
 
-                    carryOut = CarryFrom(shifterOperand, b, Rd_new).ToFlagResult();
-                    overflowOut = OverflowFrom(shifterOperand, b, Rd_new).ToFlagResult();
+                    carryOut = CarryFrom(shifterOperand, b, rdNew).ToFlagResult();
+                    overflowOut = OverflowFrom(shifterOperand, b, rdNew).ToFlagResult();
                     break;
 
                 // ADD
                 case 0x4:
-                    Rd_new = unchecked(Rn_val + shifterOperand);
+                    rdNew = unchecked(rnVal + shifterOperand);
 
-                    carryOut = CarryFrom(Rn_val, shifterOperand, Rd_new).ToFlagResult();
-                    overflowOut = OverflowFrom(Rn_val, shifterOperand, Rd_new).ToFlagResult();
+                    carryOut = CarryFrom(rnVal, shifterOperand, rdNew).ToFlagResult();
+                    overflowOut = OverflowFrom(rnVal, shifterOperand, rdNew).ToFlagResult();
                     break;
 
                 // ADC
                 case 0x5:
                     uint carryValue = Registers.IsFlagSet(Flag.C) ? 1u : 0;
                     b = shifterOperand + carryValue;
-                    Rd_new = unchecked(Rn_val + b);
+                    rdNew = unchecked(rnVal + b);
 
-                    carryOut = CarryFrom(Rn_val, b, Rd_new).ToFlagResult();
-                    overflowOut = OverflowFrom(Rn_val, b, Rd_new).ToFlagResult();
+                    carryOut = CarryFrom(rnVal, b, rdNew).ToFlagResult();
+                    overflowOut = OverflowFrom(rnVal, b, rdNew).ToFlagResult();
                     break;
 
                 // SBC
                 case 0x6:
                     carryValue = Registers.IsFlagSet(Flag.C) ? 0 : 1u;
                     b = unchecked((uint)-(shifterOperand + carryValue));
-                    Rd_new = unchecked(Rn_val + b);
+                    rdNew = unchecked(rnVal + b);
 
-                    carryOut = CarryFrom(Rn_val, b, Rd_new).ToFlagResult();
-                    overflowOut = OverflowFrom(Rn_val, b, Rd_new).ToFlagResult();
+                    carryOut = CarryFrom(rnVal, b, rdNew).ToFlagResult();
+                    overflowOut = OverflowFrom(rnVal, b, rdNew).ToFlagResult();
                     break;
 
                 // RSC
                 case 0x7:
                     carryValue = Registers.IsFlagSet(Flag.C) ? 0 : 1u;
-                    b = unchecked((uint)-(Rn_val + carryValue));
-                    Rd_new = unchecked(shifterOperand + b);
+                    b = unchecked((uint)-(rnVal + carryValue));
+                    rdNew = unchecked(shifterOperand + b);
 
-                    carryOut = CarryFrom(shifterOperand, b, Rd_new).ToFlagResult();
-                    overflowOut = OverflowFrom(shifterOperand, b, Rd_new).ToFlagResult();
+                    carryOut = CarryFrom(shifterOperand, b, rdNew).ToFlagResult();
+                    overflowOut = OverflowFrom(shifterOperand, b, rdNew).ToFlagResult();
                     break;
 
                 // TST
                 case 0x8:
-                    uint aluOut = Rn_val & shifterOperand;
+                    uint aluOut = rnVal & shifterOperand;
                     Registers.ModifyFlag(Flag.N, IsBitSet(aluOut, 31));
                     Registers.ModifyFlag(Flag.Z, aluOut is 0);
                     Registers.ModifyFlag(Flag.C, carryOut);
@@ -138,7 +138,7 @@ namespace Nezu.Core.ARM11
 
                 // TEQ
                 case 0x9:
-                    aluOut = Rn_val ^ shifterOperand;
+                    aluOut = rnVal ^ shifterOperand;
                     Registers.ModifyFlag(Flag.N, IsBitSet(aluOut, 31));
                     Registers.ModifyFlag(Flag.Z, aluOut is 0);
                     Registers.ModifyFlag(Flag.C, carryOut);
@@ -147,57 +147,57 @@ namespace Nezu.Core.ARM11
                 // CMP
                 case 0xA:
                     shifterOperand = unchecked((uint)(-shifterOperand));
-                    aluOut = unchecked(Rn_val + shifterOperand);
+                    aluOut = unchecked(rnVal + shifterOperand);
 
                     Registers.ModifyFlag(Flag.N, IsBitSet(aluOut, 31));
                     Registers.ModifyFlag(Flag.Z, aluOut is 0);
-                    Registers.ModifyFlag(Flag.C, CarryFrom(Rn_val, shifterOperand, Rd_new));
-                    Registers.ModifyFlag(Flag.V, OverflowFrom(Rn_val, shifterOperand, Rd_new));
+                    Registers.ModifyFlag(Flag.C, CarryFrom(rnVal, shifterOperand, rdNew));
+                    Registers.ModifyFlag(Flag.V, OverflowFrom(rnVal, shifterOperand, rdNew));
                     return;
 
                 // CMN
                 case 0xB:
-                    aluOut = unchecked(Rn_val + shifterOperand);
+                    aluOut = unchecked(rnVal + shifterOperand);
 
                     Registers.ModifyFlag(Flag.N, IsBitSet(aluOut, 31));
                     Registers.ModifyFlag(Flag.Z, aluOut is 0);
-                    Registers.ModifyFlag(Flag.C, CarryFrom(Rn_val, shifterOperand, Rd_new));
-                    Registers.ModifyFlag(Flag.V, OverflowFrom(Rn_val, shifterOperand, Rd_new));
+                    Registers.ModifyFlag(Flag.C, CarryFrom(rnVal, shifterOperand, rdNew));
+                    Registers.ModifyFlag(Flag.V, OverflowFrom(rnVal, shifterOperand, rdNew));
                     return;
 
                 // ORR
                 case 0xC:
-                    Rd_new = Rn_val | shifterOperand;
+                    rdNew = rnVal | shifterOperand;
                     break;
 
                 // MOV
                 case 0xD:
-                    Rd_new = shifterOperand;
+                    rdNew = shifterOperand;
                     break;
 
                 // MVN
                 case 0xF:
-                    Rd_new = ~shifterOperand;
+                    rdNew = ~shifterOperand;
                     break;
 
                 // BIC
                 case 0xE:
-                    Rd_new = Rn_val & ~shifterOperand;
+                    rdNew = rnVal & ~shifterOperand;
                     break;
             }
 
-            Registers[Rd] = Rd_new;
+            Registers[rd] = rdNew;
 
-            if (S)
+            if (s)
             {
-                if (Rd is RegisterSet.PC)
+                if (rd is RegisterSet.PC)
                 {
                     Registers.CPSR = Registers.SPSR;
                 }
                 else
                 {
-                    Registers.ModifyFlag(Flag.N, IsBitSet(Rd_new, 31));
-                    Registers.ModifyFlag(Flag.Z, Rd_new is 0);
+                    Registers.ModifyFlag(Flag.N, IsBitSet(rdNew, 31));
+                    Registers.ModifyFlag(Flag.Z, rdNew is 0);
                     Registers.ModifyFlag(Flag.C, carryOut);
                     Registers.ModifyFlag(Flag.V, overflowOut);
                 }
