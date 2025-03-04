@@ -15,7 +15,7 @@ namespace Nezu.Core.ARM11
             uint h = (instruction >> 24) & 1;
             uint pc = Registers[PC];
 
-            Registers[LR] = pc + 4;
+            Registers[LR] = pc - 4;
             SetModeThumb();
             Registers[PC] = (uint)(pc + (target << 2) + (h << 1));
         }
@@ -24,7 +24,7 @@ namespace Nezu.Core.ARM11
         {
             uint target = Registers[instruction & 0b1111];
 
-            Registers[LR] = Registers[PC] + 4;
+            Registers[LR] = Registers[PC] - 4;
             Registers[PC] = target & 0xFFFFFFFE;
 
             if ((target & 1) != 0)
@@ -50,7 +50,7 @@ namespace Nezu.Core.ARM11
             bool link = IsBitSet(instruction, 24);
             uint pc = Registers[PC];
 
-            if (link) Registers[LR] = pc + 4;
+            if (link) Registers[LR] = pc - 4;
             Registers[PC] = (uint)(pc + (target << 2));
         }
     }
