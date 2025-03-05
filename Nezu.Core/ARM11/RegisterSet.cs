@@ -97,6 +97,13 @@ namespace Nezu.Core.ARM11
             CurrentMode = newMode;
         }
 
+        internal void ResetRegisters()
+        {
+            for (int i = 0; i < 16; i++) _registers[i] = 0;
+            Array.Clear(_bankStore, 0, _bankStore.Length);
+            Array.Clear(_bankedSpsr, 0, _bankedSpsr.Length);
+        }
+
         public void PrintRegisters()
         {
             Console.WriteLine($"Mode: {CurrentMode}");
