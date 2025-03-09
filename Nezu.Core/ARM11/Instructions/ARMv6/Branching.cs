@@ -46,12 +46,12 @@ namespace Nezu.Core.ARM11
 
         private void ARM_B_L(uint instruction)
         {
-            int target = ExpandToInt32(instruction & 0xFFFFFF);
+            int target = ExpandToInt32((instruction & 0xFFFFFF) << 2);
             bool link = IsBitSet(instruction, 24);
             uint pc = Registers[PC];
 
-            if (link) Registers[LR] = pc - 4;
-            Registers[PC] = (uint)(pc + (target << 2));
+            if (link) Registers[LR] = pc;
+            Registers[PC] = (uint)(pc + 4 + target);
         }
     }
 }
